@@ -1,0 +1,9 @@
+function [stats] = create_stats()
+stats.num_hits = nan;
+stats.num_misses.t_only = nan;
+stats.num_misses.f_only = nan;
+stats.num_misses.t_and_f = nan;
+stats.mse_t = nan;
+stats.mse_f = nan;
+stats.bias_t = nan;
+stats.bias_f = nan;
