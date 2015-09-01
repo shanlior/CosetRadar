@@ -20,6 +20,7 @@ while overlapping_targets
     % substract it because we don't want to create another bucket
     % we added the Q factor
     targets.t = rand(g.L, 1) * (g.Q * g.tau - g.t_pulse); %[sec]
+    targets.t = round(targets.t * 1e8)/1e8
     targets.f = rand(g.L, 1) * 1/g.tau; %[hz]
     overlapping_targets = 0;
     for l=1:g.L-1

@@ -11,14 +11,14 @@ Pchopped = P - Q + 1;
 
 Ci = g.Ci;
 
-k = g.CS.kappa;
-m_p = g.m_p;
+%k = g.CS.kappa;
+%m_p = g.m_p;
 
 % Xampling
 % x, X, C: Dimensions: 1=Channel, 2=Time, 3=Bucket
 H_kappa = get_H_empiric(g);
 C = zeros(length(Ci), length(g.CS.kappa), P - Q + 1); % output fourier matrix (measurements)
-X = fft(x(:,:,1:size(C,3)),[],2);
+X = fft(x,[],2);
 kappa_indexes = mod(g.CS.kappa, size(X,2));
 for i=1:size(X,1)
     for b=1:size(X,3)
@@ -52,26 +52,31 @@ B = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
 
 
 %% self check of our equation 
-
-size(g.h)
-H_spectra=diag(fft(g.h,N));
-size(H_spectra)
-H_spectra = g.H_spectra; 
-
-x_check = zeros(size(x,2),size(x,3));
-
-  for  k=1:size(x_check,1)
-    for b=1:size(x_check,2)
-        for l=1:g.L
-            x_check(k,b) = x_check(k,b) +H_spectra(k)*targets.a(l) * exp(j*2*pi*g.Ci(1)*floor(targets.t(l)/g.tau)/P) * ...
-                exp(-2*j*pi*k*mod(targets.t(l),g.tau)/g.tau)*exp(-j*2*pi*b*(g.tau*targets.f(l)+g.Ci(1)/P));
-      end
-    end
-end
-
-max(max(abs(x_check-squeeze(X(1,:,:)))))
-
-
+% 
+% %size(g.h)
+% H_spectra=fft(g.h,size(x,2));
+% %size(H_spectra)
+% %H_spectra = g.H_spectra; 
+% %size(H_spectra) 
+% 
+% %size(x,2)
+% 
+% x_check = zeros(size(x,2),size(x,3));
+% 
+% for  k=1:size(x_check,1)
+%     for b=Q:P
+%         for l=1:g.L
+%             x_check(k,b-Q+1) = x_check(k,b-Q+1) + H_spectra(k)*targets.a(l) * exp(1j*2*pi*g.Ci(1)*floor(targets.t(l)/g.tau)/P) * ...
+%                 exp(-2*1j*pi*(k-1)*mod(targets.t(l),g.tau)/g.tau)*exp(-1j*2*pi*(b-1)*(g.tau*targets.f(l)+g.Ci(1)/P));
+%         end
+%     end
+% end
+% DebugArray = squeeze(X(1,:,:));
+% debug.a = DebugArray;
+% debug.check = x_check;
+% max(max(abs(x_check-squeeze(X(1,:,:)))))
+% 
+% 
 
 
 
