@@ -2,17 +2,17 @@ function [Results,targets,targets_Coset] = sim1()
 %Ci= 30; % channel coefficient
 %Q = 2; % How many ambiguities are resolved
 % Ci = 79;
-Q = 3;  
+Q = 2;  
 Ci=[79 83  89 97 101 103 113];
 % Simulation config
-rng(15);
+rng('shuffle');
 %r = rng(rngseed)
 success = 0;
 for (i=1)
 
-    Results(i).a=rng(17);
+    Results(i).a=rng('shuffle');
     g = global_settings();
-    g_coset = global_settings_coset(g.P,100,2,-26, 1, 1, 0, 1,Ci,Q);
+    g_coset = global_settings_coset(g.P,100,1,-26, 1, 1, 0, 1,Ci,Q);
 
     % Randomizing targets
     targets = randomize_targets(g_coset);

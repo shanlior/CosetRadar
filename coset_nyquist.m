@@ -40,13 +40,13 @@ end
 
 % A matrix creation - Channels(Ci) x Q(Ambiguity factor)
 
-A = exp(j*2*pi*Ci'*(0:Q-1)/P);
+A = exp(2j*pi*Ci'*(0:Q-1)/P);
 
 % B matrix creation - size N x N
 % represents the delays
 
-B = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
-
+B = exp(-2j*pi*(0:N-1)'*(0:N-1)/N);
+% Tau_l = n * (tau/N)
 
 
 
@@ -79,7 +79,6 @@ B = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
 % 
 
 
-
 %% Focusing Cell
 targets.a = zeros(g.L,1);
 targets.t = zeros(g.L,1);
@@ -89,7 +88,7 @@ disp('Running Focusing Procedure');
 shiftMatrix = zeros(size(C));
 for i = 1:size(C,1)
     for b = 1:size(C,3)
-        shiftMatrix(i,:,b) = exp(j*2*pi*b*Ci(i)/P);
+        shiftMatrix(i,:,b) = exp(2j*pi*b*Ci(i)/P);
     end
 end
 % Shift by Ci
@@ -157,28 +156,30 @@ for l=1:g.L
             targets.f(l) = (f-1) / g.CS.N_f / g.tau;
         end
     end
-    
+    C_temp = zeros(size(shiftedC));
     % subtract estimated target response
-    targets.a(l) = targets.a(l); % (g.P - g.Q + 1);
-    for i = 1:size(shiftedC,1)
-        C_temp(i,:,:) = targets.a(l) * exp(-1j*2*pi*g.CS.kappa*targets.t(l)/g.tau) * ...
-            exp(1j*2*pi*targets.f(l)*(g.Q:g.P)*g.tau) * exp(1j*2*pi*Ci(i)*targets.q(l)/g.P); %/g.tau; %CHECK: divide by Tau 
-        % CHECK: exp(-1j*2*pi*targets.f(l)*(g.Q:g.P)*g.tau)
-    end
+    targets.a(l) = targets.a(l)/ (P - Q + 1);
+%     for i = 1:size(shiftedC,1)
+%         C_temp(i,:,:) = targets.a(l) * exp(-1j*2*pi*g.CS.kappa*targets.t(l)/g.tau) * ...
+%             exp(1j*2*pi*targets.f(l)*(g.Q:g.P)*g.tau) * exp(1j*2*pi*Ci(i)*targets.q(l)/g.P); %/g.tau; %CHECK: divide by Tau 
+%         % CHECK: exp(-1j*2*pi*targets.f(l)*(g.Q:g.P)*g.tau)
+%     end
     x_cut = zeros(size(A,2),size(B,1));
     x_cut(q_index,t_index)=targets.a(l);
+
     for i = 1:size(shiftedC,3)
-        C_temp(:,:,i) = A *x_cut * exp(-j*2*pi*i*ones(N,1)*(0:N-1)/N);;
+        C_temp(:,:,i) = A *x_cut * exp(-j*2*pi*i*ones(N,1)*(0:N-1)/N);
         % CHECK: exp(-1j*2*pi*targets.f(l)*(g.Q:g.P)*g.tau)
     end
-    disp(max(max(max(abs(C_temp)))))
-    disp(max(max(max(abs(shiftedC)))))
+    %disp(max(max(max(abs(C_temp)))))
+    %disp(max(max(max(abs(shiftedC)))))
     shiftedC = shiftedC - C_temp.*shiftMatrix;
     
 end
-disp(targets.q)
-disp(targets.t)
-disp(targets.f)
+% disp(targets.q)
+% disp(targets.t)
+% disp(targets.f)
+targets.real_t = targets.t + g.tau * targets.q;
 
 
 % %%
