@@ -20,15 +20,21 @@ while overlapping_targets
     % substract it because we don't want to create another bucket
     % we added the Q factor
     targets.t = rand(g.L, 1) * (g.Q * g.tau - g.t_pulse); %[sec]
-    targets.t = round(targets.t * 1e8)/1e8;
+    %targets.t = round(targets.t * 1e8)/1e8;
+    targets.t = round(targets.t * g.Fs) / g.Fs;
     targets.f = rand(g.L, 1) * 1/g.tau; %[hz]
     overlapping_targets = 0;
     for l=1:g.L-1
         for ll=l+1:g.L
             % needs to check if seperation is limited because of tau
             % seperation
-            if abs(targets.t(l) - targets.t(ll)) < min_separation*g.Nyquist.dt && ...
-                    abs(targets.f(l) - targets.f(ll)) < min_separation*g.Nyquist.df
+%             if abs(targets.t(l) - targets.t(ll)) < min_separation*g.Nyquist.dt && ...
+%                     abs(targets.f(l) - targets.f(ll)) < min_separation*g.Nyquist.df
+%                 overlapping_targets = 1;
+%                 break;
+%             end
+            if abs(targets.t(l) - targets.t(ll)) < min_separation*g.CS.delta_t
+                %    abs(targets.f(l) - targets.f(ll)) < min_separation /  (g.P * g.tau)
                 overlapping_targets = 1;
                 break;
             end

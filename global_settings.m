@@ -20,9 +20,10 @@ g.L = L; % number of targets
 g.P = P; % number of pulses
 g.tau = 10e-6; % PRI [sec]
 % g.tau = 5e-6; % PRI [sec]
-g.h_BW = 100e6;
+g.h_BW = 1e6*11/10;
 % g.h_BW = 100e6*2;
-g.Fs = 50*g.h_BW;
+multFactor = 50;
+g.Fs = multFactor*g.h_BW;
 if 0
     addpath('OMP_Receiver_Test\SignalGeneration');
     addpath('OMP_Receiver_Test\Filters');
@@ -32,7 +33,13 @@ else
 %     assert(g.h_BW == 100e6);
   %  assert(g.Fs == 5e9);
 %     assert(g.tau == 10e-6);
-    load pulse;
+%     load pulse;
+    h = zeros(11,1);
+%     h(5) = 0.5;
+%     h(7) = 0.5;
+    h(6) = 1;
+    H_spectra = fft(h,length(h)*multFactor);
+    
 end
 g.h = h;
 g.h_length = length(h);
@@ -128,12 +135,13 @@ g.CS.B = normalize_columns(g.CS.B);
 %         kron(exp(1j*2*pi*p*(0:g.CS.N_f-1)/g.CS.N_f), g.CS.A);
 % end
 % assert(all(abs(g.CS.A2(:)) > 0));
-
-fprintf('duty cycle = %%%.2f\n', 100*g.t_pulse/g.tau);
-fprintf('Hit rate ellipse: +/-(%.2f,%.2f) Nyquist (time,freq) bins\n', ...
-    g.hit_rate_threshold.t / g.Nyquist.dt, g.hit_rate_threshold.f / g.Nyquist.df);
-fprintf('CS grid bin over Nyquist bin ratio (time/freq) = (%.2f,%.2f)\n', ...
-    g.CS.delta_t/g.Nyquist.dt, g.CS.delta_f/g.Nyquist.df);
-fprintf('Classic/CS processing using %d/%d samples per pulse, %d/%d pulses\n', ...
-    round(g.tau*2*g.h_BW), length(g.CS.kappa), g.P, round(g.P / g.pulse_SubNyquist_factor));
-fprintf('Total CS undersampling ratio = %.1f\n', g.pulse_SubNyquist_factor * g.sample_SubNyquist_factor);
+if 0
+    fprintf('duty cycle = %%%.2f\n', 100*g.t_pulse/g.tau);
+    fprintf('Hit rate ellipse: +/-(%.2f,%.2f) Nyquist (time,freq) bins\n', ...
+        g.hit_rate_threshold.t / g.Nyquist.dt, g.hit_rate_threshold.f / g.Nyquist.df);
+    fprintf('CS grid bin over Nyquist bin ratio (time/freq) = (%.2f,%.2f)\n', ...
+        g.CS.delta_t/g.Nyquist.dt, g.CS.delta_f/g.Nyquist.df);
+    fprintf('Classic/CS processing using %d/%d samples per pulse, %d/%d pulses\n', ...
+        round(g.tau*2*g.h_BW), length(g.CS.kappa), g.P, round(g.P / g.pulse_SubNyquist_factor));
+    fprintf('Total CS undersampling ratio = %.1f\n', g.pulse_SubNyquist_factor * g.sample_SubNyquist_factor);
+end
