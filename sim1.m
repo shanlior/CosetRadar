@@ -2,14 +2,15 @@ function [successVec,resultHist,realHist,Results,targets,targets_Coset] = sim1()
 %Ci= 30; % channel coefficient
 %Q = 2; % How many ambiguities are resolved
 % Ci = 79;
-Q = 3;  
-Ci=[3 7 8 11 91];
+Q = 2;  
+Ci=[3 7 8 11 13 15];
+%Ci = [79 81 83];
 % Simulation config
 rng('shuffle');
 %r = rng(rngseed)
 success = 0;
 numSims = 10;
-L = 2; % numTargets
+L = 4; % numTargets
 realHist = zeros(numSims,L,2);
 resultHist = zeros(numSims,L,2);
 successVec = zeros(numSims,1);
@@ -48,17 +49,22 @@ for (i=1:numSims)
     realHist(i,:,:) = targets_real(:,:);
     resultHist(i,:,:) = targets_result(:,:);
     %[targets_Coset,stats] = analyze_results(g_coset, targets, targets_Coset, 'NU_SubNyq');
-    fprintf('iteration: %d\n', i);
     successVec(i) = max(max(abs(targets_real - targets_result)));
-    
-    if max(max(abs(targets_real - targets_result))) == 0
-        success = success + 1;
+    if successVec(i) == 9 
+        successVec(i) = 1
     end
-    fprintf('Success: %d\n', success);
-
-
+    if successVec(i) < 2
+        success = success + 1;
+        fprintf('Iteration %d is successful\n', i);
+    else
+        fprintf('Iteration %d failed\n', i);
+    end
+    fprintf('Success rate: %.1f percent\n', 100*success/i);
 end
-success
+if success == numSims
+    fprintf('Great Success!\n');
+end
+
 % targets_Coset.f
 % targets_Coset.t
 %plot_results(g_coset, targets, targets_Coset);

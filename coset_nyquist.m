@@ -94,9 +94,23 @@ for i = 1:g.L
     [maxRows, bestRow] = max(map);
     [~, bestCol] = max(maxRows);
     bestRow = bestRow(bestCol);
+    for old = 1:i-1
+        while abs((bestRow - t_kron(old))) <= 1
+            map(bestRow,bestCol) = 0;
+            [maxRows, bestRow] = max(map);
+            [~, bestCol] = max(maxRows);
+            bestRow = bestRow(bestCol);
+        end
+    end
     t_kron(i) = bestRow;
     f_kron(i) = bestCol;
     map(bestRow,bestCol) = 0;
+    if bestRow < size(map,1)
+        map(bestRow+1,bestCol) = 0;
+    end
+    if bestRow > 1
+        map(bestRow-1,bestCol) = 0;
+    end
 end
 targets.t = t_kron;
 targets.f = f_kron;
