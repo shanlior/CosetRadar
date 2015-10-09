@@ -2,7 +2,7 @@ function [successVec,resultHist,realHist,Results,targets,targets_Coset] = sim1()
 %Ci= 30; % channel coefficient
 %Q = 2; % How many ambiguities are resolved
 % Ci = 79;
-Q = 2;  
+Q = 3;  
 Ci=[3 7 8 11 13 15];
 %Ci = [79 81 83];
 % Simulation config
