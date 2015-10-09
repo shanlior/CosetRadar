@@ -5,11 +5,6 @@ targets.a = ones(g.L, 1);
 if g.P > 1
     targets.a = targets.a .* exp(1j*2*pi*rand(g.L,1));
 end
-if ~g.fixed_target_amplitudes % add +/-10dB to amplitude, uniformly distributed in dB
-    delta_a_max_dB = 10;
-    delta_a = delta_a_max_dB * (2*rand(g.L, 1) - 1);
-    targets.a = targets.a .* 10^(delta_a / 10);
-end
 
 % randomize time and frequency, make sure no overlap
 overlapping_targets = 1;

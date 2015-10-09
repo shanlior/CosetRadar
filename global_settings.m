@@ -1,19 +1,4 @@
-function [g] = global_settings(P, L, snr_db, sample_SubNyquist_factor, pulse_SubNyquist_factor, ...
-    random_fourier_coeffs, fixed_target_amplitudes)
-
-if nargin == 0 || nargin == 1
-    L = 5;
-    
-    if nargin == 0
-        P = 100;
-    end
-    
-    snr_db = 100; %-16 for P=1, -26 for P=10, -33 for P=50
-    sample_SubNyquist_factor = 10;
-    pulse_SubNyquist_factor = 1;
-    random_fourier_coeffs = 0;
-    fixed_target_amplitudes = 1;
-end
+function [g] = global_settings(nu_pulses, P, L, Ci,Q)
 
 fftw('planner', 'hybrid');
 g.L = L; % number of targets
@@ -30,15 +15,19 @@ if 0
     [h, H_spectra] = genPulse(g.h_BW, g.Fs, g.tau);
     save('pulse','h','H_spectra');
 else
-%     assert(g.h_BW == 100e6);
-  %  assert(g.Fs == 5e9);
-%     assert(g.tau == 10e-6);
-%     load pulse;
-    h = zeros(11,1);
-%     h(5) = 0.5;
-%     h(7) = 0.5;
-    h(6) = 1;
-    H_spectra = fft(h,length(h)*multFactor);
+    if 0
+        load pulse;
+    else
+        h = zeros(15,1);
+%         h(9) = -0.9;
+%         h(7) = -0.9;
+%         h(6) = 0.3;
+%         h(10) = 0.3;
+%         h(11) = -0.07;
+%         h(5) = -0.07;
+        h(8) = 3;
+        H_spectra = fft(h,length(h)*multFactor);
+    end
     
 end
 g.h = h;
@@ -50,8 +39,8 @@ g.Nyquist.dt = 1/(2*g.h_BW*1); % Nyquist time bin [sec]
 g.Nyquist.df = 1/(g.P*g.tau); % Nyquist frequency bin [hz]
 g.hit_rate_threshold.t = 3*g.Nyquist.dt; % hit rate ellipse half time axis
 g.hit_rate_threshold.f = 3*g.Nyquist.df; % hit rate ellipse half frequency axis
-g.snr = 10^(snr_db/10); %[1]
-g.fixed_target_amplitudes = fixed_target_amplitudes;
+% g.snr = 10^(snr_db/10); %[1]
+% g.fixed_target_amplitudes = fixed_target_amplitudes;
 g.mf.use_windows = 0;
 g.mf.debug_plot = 0;
 
@@ -66,60 +55,14 @@ g.invalid_indexes_end = floor(g.t_pulse/g.CS.delta_t)-1; % -1 to make even
 g.CS.time_over_recovery = 2; % time over-recovery factor
 g.CS.normalize_H_with_division = 1;
 
-assert(sample_SubNyquist_factor >= 1);
-assert(pulse_SubNyquist_factor >= 1);
-g.sample_SubNyquist_factor = sample_SubNyquist_factor;
-g.pulse_SubNyquist_factor = pulse_SubNyquist_factor;
+% assert(sample_SubNyquist_factor >= 1);
+% assert(pulse_SubNyquist_factor >= 1);
 k_max = round(0.95*g.h_BW*g.tau);
-num_fourier_coeffs = round(2*g.h_BW*g.tau / g.sample_SubNyquist_factor);
+num_fourier_coeffs = round(2*g.h_BW*g.tau );
 num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
 
-if random_fourier_coeffs == 0 % LPF
-    if g.P==1 && num_fourier_coeffs <= k_max
-        disp('todo - real coeffs');
-        g.CS.kappa = 0:num_fourier_coeffs-1;
-    else
-        g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
-        g.CS.kappa = 0:g.CS.N_t-1;
-    end
-elseif random_fourier_coeffs == 1 % true rand
-    if g.P==1 && num_fourier_coeffs <= k_max+1
-        g.CS.kappa = randsample(k_max+1, num_fourier_coeffs)-1;
-    else
-        g.CS.kappa = randsample(2*k_max+1, num_fourier_coeffs)-(k_max+1);
-    end
-elseif random_fourier_coeffs == 2 % blocks of K
-    K = 25;
-    g.CS.kappa = randsample(2*k_max/K, num_fourier_coeffs/K)-1;
-    g.CS.kappa = bsxfun(@plus, K*g.CS.kappa, 0:K-1);
-    g.CS.kappa = g.CS.kappa(:) - k_max;
-    assert(length(g.CS.kappa) == length(unique(g.CS.kappa)));
-elseif random_fourier_coeffs == 3 % cosets 1 - same k in all cosets
-    if g.P==1
-        k=floor(k_max/num_fourier_coeffs);
-        m=randi(k)-1;
-        g.CS.kappa=(m:k:k_max-1);
-    else
-        k=floor(2*k_max/num_fourier_coeffs);
-        m=randi(k)-1;
-        g.CS.kappa=(-k_max+m:k:k_max-1);
-    end
-elseif random_fourier_coeffs == 4 % cosets 2 - different k in all cosets
-    if g.P==1
-        k=floor(k_max/num_fourier_coeffs);
-        g.CS.kappa=randi(k, 1, num_fourier_coeffs)-1;
-        g.CS.kappa=g.CS.kappa+(0:num_fourier_coeffs-1)*k;
-    else
-        k=floor(2*k_max/num_fourier_coeffs);
-        g.CS.kappa=randi(k, 1, num_fourier_coeffs)-1;
-        g.CS.kappa=g.CS.kappa+(0:num_fourier_coeffs-1)*k-k_max;
-    end
-elseif random_fourier_coeffs == 5
-    k_range=num_fourier_coeffs+200;
-    g.CS.kappa=randsample(k_range,num_fourier_coeffs)-k_range/2;
-else
-    error('bad option');
-end
+    g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
+    g.CS.kappa = 0:g.CS.N_t-1;
 g.CS.kappa = g.CS.kappa(:);
 % assert(length(g.CS.kappa) == num_fourier_coeffs);
 % assert(all(abs(g.CS.kappa) <= k_max));
@@ -145,3 +88,14 @@ if 0
         round(g.tau*2*g.h_BW), length(g.CS.kappa), g.P, round(g.P / g.pulse_SubNyquist_factor));
     fprintf('Total CS undersampling ratio = %.1f\n', g.pulse_SubNyquist_factor * g.sample_SubNyquist_factor);
 end
+
+%% Gal Lior setting
+% Adds m_p
+if nargin == 0
+    nu_pulses = 50;
+end
+
+g.m_p = sort(randsample(g.P,nu_pulses))-1;
+% g.m_p = 1;
+g.Ci = Ci;
+g.Q = Q;

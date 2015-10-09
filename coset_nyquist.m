@@ -1,4 +1,4 @@
-function [targets] = coset_nyquist(g, x, SolveAlgorithm,targets) % SolveAlgorithm=1=FISTA; 2=OMP
+function [targets_kron] = coset_nyquist(g, x, SolveAlgorithm,targets) % SolveAlgorithm=1=FISTA; 2=OMP
 
 if nargin == 2
     SolveAlgorithm = 2; % Default value is OMP
@@ -31,84 +31,8 @@ for i=1:size(X,1)
     end
 end
 
-%clear X;
-
-% Creates the Vandermonde matrices
-
-% Let's annotate the matrices Y=AXB
-
-
-% A matrix creation - Channels(Ci) x Q(Ambiguity factor)
-
-%A = exp(2j*pi*Ci'*(0:Q-1)/P);
-% B matrix creation - size N x N
-% represents the delays
-
-%B = exp(-2j*pi*(0:N-1)'*(0:N-1)/N);
-% Tau_l = n * (tau/N)
-
-
-%% Kronecker
-
-% Changes: h (pulse), P size, h_BW
-% x, X, C: Dimensions: 1=Channel, 2=Time, 3=Bucket
-
-
-% Creates the Vandermonde matrices
-
-% Let's annotate the matrices Y=AXB
-
-% A matrix creation - size N x (Q*N)
-% represents the delays
-
-A = zeros(size(C,1),N,Q*N);
-tmp = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
-for c = 1:size(C,1)
-    for q=1:Q
-        A(c,:,(1+(q-1)*N):(q*N)) = tmp * exp(j*2*pi*Ci(c)*(q-1)/P);
-    end
-end
-
-% B matrix creation - size P x (P-Q)
-
-B = zeros(size(C,1),P,P-Q+1);
-for c = 1:size(C,1)
-    for p = 1:P
-        for b = Q:P
-            %B(p,b-Q+1) = exp(-(j*2*pi/P)*((p-1)*(b-1) - Ci*(b-1)));
-            B(c,p,b-Q+1) = exp(-2j*pi*(b-1)*((p-1)/P + Ci(c)/P));
-        end
-    end
-end
-krons = [];
-Cvec = [];
-for c = 1:size(C,1)
-    krons = [krons ; kron(transpose(squeeze(B(c,:,:))),squeeze(A(c,:,:)))]; % solutions
-    Cvec = [Cvec ; reshape(squeeze(C(c,:,:)),size(C,2)*size(C,3),1)]; % measures
-end
-t_kron = zeros(g.L,1);
-f_kron = zeros(g.L,1);
-map_rec = pinv(krons) * Cvec;
-map = reshape(abs(map_rec),Q*N, P);
-for i = 1:g.L
-    [maxRows, bestRow] = max(map);
-    [~, bestCol] = max(maxRows);
-    bestRow = bestRow(bestCol);
-    t_kron(i) = bestRow;
-    f_kron(i) = bestCol;
-    map(bestRow,bestCol) = 0;
-end
-targets.t = t_kron;
-targets.f = f_kron;
-% round(targets.t /g.CS.delta_t + 1)
-% round(targets.f *  P * g.tau + 1)
-% 
-% t_output = (t_kron-1) * g.CS.delta_t;
-% f_output = (f_kron-1) / g.CS.N_f / g.tau;
-% targets.t;
-% targets.f;
 %% self check of our equation 
-% 
+
 % %size(g.h)
 % H_spectra=fft(g.h,size(x,2));
 % %size(H_spectra)
@@ -130,12 +54,26 @@ targets.f = f_kron;
 % DebugArray = squeeze(X(1,:,:));
 % debug.a = DebugArray;
 % debug.check = x_check;
-% max(max(abs(x_check-squeeze(X(1,:,:)))))
-% 
-% 
+% % max(max(abs(x_check-squeeze(X(1,:,:)))))
+% max(max(abs(x_check-squeeze(X(1,:,:)))));
 
 
 %% Focusing Cell
+%clear X;
+
+% Creates the Vandermonde matrices
+
+% Let's annotate the matrices Y=AXB
+
+% A matrix creation - Channels(Ci) x Q(Ambiguity factor)
+
+% A = exp(2j*pi*Ci'*(0:Q-1)/P);
+% % B matrix creation - size N x N
+% % represents the delays
+% 
+% B = exp(-2j*pi*(0:N-1)'*(0:N-1)/N);
+% % Tau_l = n * (tau/N)
+% 
 % targets.a = zeros(g.L,1);
 % targets.t = zeros(g.L,1);
 % targets.f = zeros(g.L,1);
@@ -236,75 +174,150 @@ targets.f = f_kron;
 % % disp(targets.t)
 % % disp(targets.f)
 % targets.real_t = targets.t + g.tau * targets.q;
+
+
+
+%% fdf
+
+% d
+% map_power = abs(map).^2;
 % 
 % 
-% % %%
-% % map_power = abs(map).^2;
-% % 
-% % 
-% % % Peak detection
-% % indices.t = [];
-% % indices.f = [];
-% % 
-% % sample_SubNyquist_factor = 1;
-% % [~,map_power_indexes] = sort(map_power(:),'descend');
-% % targets.a = zeros(g.L, 1);
-% % targets.t = zeros(g.L, 1);
-% % targets.f = zeros(g.L, 1);
-% % targets_idx = zeros(g.L, 1);
-% % l = 0;
-% % index_count = 1;
-% % local_max = ordfilt2(map_power, 9, ones(3));
-% % Q1 = [.5 -1 .5 ; -.5 0 .5 ; 0 1 0]; % for parabola interpolation
-% % while l < g.L && index_count <= length(map_power_indexes)
-% %     [t_index,f_index] = ind2sub(size(map_power), map_power_indexes(index_count));
-% %     if local_max(t_index, f_index) == map_power(t_index, f_index)
-% %                 checkTau = 1;
-% % %         for i=1:l
-% % %             for deltaTau=-(Q-1):(Q-1)
-% % %                 if (t_index + deltaTau * round(g.tau * g.Fs)  == targets_idx(l))
-% % %                     checkTau = 0;
-% % %                 end
-% % %             end
-% % %         end
-% % %         if (~checkTau)
-% % %             continue;
-% % %         end
-% %         l = l + 1;
-% %         targets_idx(l) = t_index;
-% %         targets.a(l) = map(t_index, f_index);
-% %         time_bias_fix = 0.4;
-% %         
-% %         % time interpolation
-% %         t_index_fix = 0;
-% %         if t_index > 1 && t_index < size(map_power, 1)
-% %             t_power = map_power(t_index+(-1:1), f_index);
-% %             a = Q1 * t_power;
+% % Peak detection
+% indices.t = [];
+% indices.f = [];
+% 
+% sample_SubNyquist_factor = 1;
+% [~,map_power_indexes] = sort(map_power(:),'descend');
+% targets.a = zeros(g.L, 1);
+% targets.t = zeros(g.L, 1);
+% targets.f = zeros(g.L, 1);
+% targets_idx = zeros(g.L, 1);
+% l = 0;
+% index_count = 1;
+% local_max = ordfilt2(map_power, 9, ones(3));
+% Q1 = [.5 -1 .5 ; -.5 0 .5 ; 0 1 0]; % for parabola interpolation
+% while l < g.L && index_count <= length(map_power_indexes)
+%     [t_index,f_index] = ind2sub(size(map_power), map_power_indexes(index_count));
+%     if local_max(t_index, f_index) == map_power(t_index, f_index)
+%                 checkTau = 1;
+% %         for i=1:l
+% %             for deltaTau=-(Q-1):(Q-1)
+% %                 if (t_index + deltaTau * round(g.tau * g.Fs)  == targets_idx(l))
+% %                     checkTau = 0;
+% %                 end
+% %             end
+% %         end
+% %         if (~checkTau)
+% %             continue;
+% %         end
+%         l = l + 1;
+%         targets_idx(l) = t_index;
+%         targets.a(l) = map(t_index, f_index);
+%         time_bias_fix = 0.4;
+%         
+%         % time interpolation
+%         t_index_fix = 0;
+%         if t_index > 1 && t_index < size(map_power, 1)
+%             t_power = map_power(t_index+(-1:1), f_index);
+%             a = Q1 * t_power;
 % %             assert(a(1) < 0);
-% %             t_index_fix = -a(2) / 2 / a(1);
-% %         end
-% %         targets.t(l) = ((t_index - 1 + t_index_fix) * sample_SubNyquist_factor + time_bias_fix) * g.tau/N;
-% %         %assert(targets.t(l)>=0 && targets.t(l)<=g.tau*Q);
-% %         
-% %         % frequency interpolation
-% %         f_index_fix = 0;
-% %         if f_index > 1 && f_index < size(map_power, 2)
-% %             f_power = map_power(t_index, f_index+(-1:1));
-% %             a = Q1 * f_power.';
+%             t_index_fix = -a(2) / 2 / a(1);
+%         end
+%         targets.t(l) = ((t_index - 1 + t_index_fix) * sample_SubNyquist_factor + time_bias_fix) * g.tau/N;
+%         %assert(targets.t(l)>=0 && targets.t(l)<=g.tau*Q);
+%         
+%         % frequency interpolation
+%         f_index_fix = 0;
+%         if f_index > 1 && f_index < size(map_power, 2)
+%             f_power = map_power(t_index, f_index+(-1:1));
+%             a = Q1 * f_power.';
 % %             assert(a(1) < 0);
-% %             f_index_fix = -a(2) / 2 / a(1);
-% %         end
-% %         targets.f(l) = (f_index - 1 + f_index_fix) /(P*g.tau);
-% % %         assert(targets.f(l)>=0 && targets.f(l)<=1/g.tau);
-% %         
-% %         if g.mf.debug_plot
-% %             h = plot(targets.t(l), targets.f(l), 'ro');
-% %             set(h,'MarkerSize',10);
-% %         end
-% %     end
-% %     index_count = index_count + 1;
-% %     indices.t = [indices.t ; t_index];
-% %     indices.f = [indices.f ; f_index];
-% % end
-% %     [indices.t' ; indices.f']'
+%             f_index_fix = -a(2) / 2 / a(1);
+%         end
+%         targets.f(l) = (f_index - 1 + f_index_fix) /(P*g.tau);
+% %         assert(targets.f(l)>=0 && targets.f(l)<=1/g.tau);
+%         
+%         if g.mf.debug_plot
+%             h = plot(targets.t(l), targets.f(l), 'ro');
+%             set(h,'MarkerSize',10);
+%         end
+%     end
+%     index_count = index_count + 1;
+%     indices.t = [indices.t ; t_index];
+%     indices.f = [indices.f ; f_index];
+% end
+%     [indices.t' ; indices.f']';
+    
+%% Kronecker
+
+% Changes: h (pulse), P size, h_BW
+% x, X, C: Dimensions: 1=Channel, 2=Time, 3=Bucket
+
+
+% Creates the Vandermonde matrices
+
+% Let's annotate the matrices Y=AXB
+
+% A matrix creation - size N x (Q*N)
+% represents the delays
+
+A = zeros(size(C,1),N,Q*N);
+tmp = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
+for c = 1:size(C,1)
+    for q=1:Q
+        A(c,:,(1+(q-1)*N):(q*N)) = tmp * exp(j*2*pi*Ci(c)*(q-1)/P);
+    end
+end
+
+% B matrix creation - size P x (P-Q)
+
+B = zeros(size(C,1),P,P-Q+1);
+for c = 1:size(C,1)
+    for p = 1:P
+        for b = Q:P
+            %B(p,b-Q+1) = exp(-(j*2*pi/P)*((p-1)*(b-1) - Ci*(b-1)));
+            B(c,p,b-Q+1) = exp(-2j*pi*(b-1)*((p-1)/P + Ci(c)/P));
+        end
+    end
+end
+krons = [];
+Cvec = [];
+for c = 1:size(C,1)
+    krons = [krons ; kron(transpose(squeeze(B(c,:,:))),squeeze(A(c,:,:)))]; % solutions
+    Cvec = [Cvec ; reshape(squeeze(C(c,:,:)),size(C,2)*size(C,3),1)]; % measures
+end
+t_kron = zeros(g.L,1);
+f_kron = zeros(g.L,1);
+map_rec = pinv(krons) * Cvec;
+map = reshape(abs(map_rec),Q*N, P);
+for i = 1:g.L
+    [maxRows, bestRow] = max(map);
+    [~, bestCol] = max(maxRows);
+    bestRow = bestRow(bestCol);
+    while any(find(abs(bestRow - t_kron) <= 1))
+            map(bestRow,bestCol) = 0;
+            [maxRows, bestRow] = max(map);
+            [~, bestCol] = max(maxRows);
+            bestRow = bestRow(bestCol);
+    end
+    t_kron(i) = bestRow;
+    f_kron(i) = bestCol;
+    map(bestRow,bestCol) = 0;
+    if bestRow < size(map,1)
+        map(bestRow+1,bestCol) = 0;
+    end
+    if bestRow > 1
+        map(bestRow-1,bestCol) = 0;
+    end
+end
+targets_kron.t = t_kron;
+targets_kron.f = f_kron;
+% round(targets.t /g.CS.delta_t + 1)
+% round(targets.f *  P * g.tau + 1)
+% 
+% t_output = (t_kron-1) * g.CS.delta_t;
+% f_output = (f_kron-1) / g.CS.N_f / g.tau;
+% targets.t;
+% targets.f;
 end

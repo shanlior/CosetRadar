@@ -1,24 +1,29 @@
-function [successVec,resultHist,realHist,Results,targets,targets_Coset] = sim1()
-%Ci= 30; % channel coefficient
-%Q = 2; % How many ambiguities are resolved
-% Ci = 79;
-Q = 3;  
-Ci=[3 7 8 11 91];
+function [successVec,resultHist,realHist,Results,targets,targets_Coset] = sim1(Ci,Q,L,P)
+close all;
+if ( nargin == 0) 
+    Ci=[0 3 7 8 11 13 15 17 19]; % channel coefficient
+    Q = 4; % How many ambiguities are resolved
+    L = 4; % numTargets
+    P=10; % numPulses
+end
 % Simulation config
 rng('shuffle');
-%r = rng(rngseed)
+numSims = 100;
+numSims = 20;
 success = 0;
-numSims = 10;
-L = 2; % numTargets
 realHist = zeros(numSims,L,2);
 resultHist = zeros(numSims,L,2);
 successVec = zeros(numSims,1);
+rngVec=1:numSims;
+failVec=[4,17,44,50,75,84,97,100];
+
 for (i=1:numSims)
 
+%     Results(i).a=rng(rngVec(i));
     Results(i).a=rng('shuffle');
-    g = global_settings();
-    g.P = 10;
-    g_coset = global_settings_coset(g.P,g.P,L,-26, 1, 1, 0, 1,Ci,Q);
+
+    g_coset = global_settings(P,P,L, Ci,Q);
+    g_coset.numSims =numSims;
 
     % Randomizing targets
     targets = randomize_targets(g_coset);
@@ -36,29 +41,15 @@ for (i=1:numSims)
 %         end
 %     end
 
-    targets_real = [round(targets.t /g_coset.CS.delta_t + 1) , round(targets.f *  g_coset.P * g_coset.tau + 1)];
-    for l=1:L
-        if targets_real(l,2) > g_coset.P
-            targets_real(l,2) = targets_real(l,2) - 9;
-        end
-    end
-    targets_real = sort(targets_real);
-    targets_result = [targets_Coset.t , targets_Coset.f];
-    targets_result = sort(targets_result);
-    realHist(i,:,:) = targets_real(:,:);
-    resultHist(i,:,:) = targets_result(:,:);
-    %[targets_Coset,stats] = analyze_results(g_coset, targets, targets_Coset, 'NU_SubNyq');
-    fprintf('iteration: %d\n', i);
-    successVec(i) = max(max(abs(targets_real - targets_result)));
-    
-    if max(max(abs(targets_real - targets_result))) == 0
-        success = success + 1;
-    end
-    fprintf('Success: %d\n', success);
-
-
+    [isSuccess,realHist(i,:,:),resultHist(i,:,:),successVec] = analyze_result(g_coset,targets,targets_Coset,i);
+    success = success + isSuccess;
+    fprintf('Success rate: %.1f percent\n', 100*success/i);
+   
 end
-success
+if success == numSims
+    fprintf('Great Success!\n');
+end
+
 % targets_Coset.f
 % targets_Coset.t
-%plot_results(g_coset, targets, targets_Coset);
+% plot_results(g_coset, targets, targets_Coset);
