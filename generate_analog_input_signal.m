@@ -41,29 +41,25 @@ for c=1:length(g_coset.Ci)
 end
     % chop matrix
     x = x(:,:,Q:P); % Dimensions: 1=Channel, 2=Time, 3=Bucket
-
-
-g_coset.snr=inf;      %%GAL    - remove noise
-if g_coset.snr < inf % add noise
-    Ps = get_h_power(g);
-    sigma_n = sqrt(Ps / g_coset.snr);
-    if P == 1
-        n = sigma_n * randn(size(x_tmp));
-    else
-        n = sigma_n * crandn(size(x_tmp)) / sqrt(2); % sqrt(2) because noise is complex
+    
+    
+    % add noise
+    
+    if g_coset.snr < inf % add noise
+        Ps = get_h_power(g_coset);
+        sigma_n = sqrt(Ps / g_coset.snr);
+        n = sigma_n * randn(size(x));
+        if 0
+            figure;
+            plot(real(n(:,1)),'g.:');
+            hold on;
+            plot(real(x(:,1)),'b.:');
+        end
+        x = x + n;
     end
-    if 0
-        figure;
-        plot(real(n(:,1)),'g_coset.:');
-        hold on;
-        plot(real(x_tmp(:,1)),'b.:');
-    end
-    x_tmp = x_tmp + n;
-end
-
-if P == 1
-    assert(all(isreal(x_tmp)));
 end
 
 function [Ps] = get_h_power(g)
-Ps = g_coset.h'*g_coset.h / g_coset.h_length; % get average power
+Ps = g.h'*g.h / g.h_length; % get average power
+end
+
