@@ -5,8 +5,8 @@ g.L = L; % number of targets
 g.P = P; % number of pulses
 g.tau = 10e-6; % PRI [sec]
 % g.tau = 5e-6; % PRI [sec]
-g.h_BW = 1e6*11/10;
-% g.h_BW = 100e6*2;
+% g.h_BW = 1e6*11/10; % kron
+g.h_BW = 100e6; % normal
 multFactor = 50;
 g.Fs = multFactor*g.h_BW;
 if 0
@@ -15,7 +15,7 @@ if 0
     [h, H_spectra] = genPulse(g.h_BW, g.Fs, g.tau);
     save('pulse','h','H_spectra');
 else
-    if 0
+    if 1
         load pulse;
     else
         h = zeros(11,1);

@@ -1,4 +1,4 @@
-function [targets_kron] = coset_nyquist(g, x,targets) % SolveAlgorithm=1=FISTA; 2=OMP
+function [targets_david] = coset_nyquist(g, x,targets) % SolveAlgorithm=1=FISTA; 2=OMP
 
 N = g.CS.N_t;
 P = g.P;
@@ -277,43 +277,49 @@ for c = 1:size(C,1)
         end
     end
 end
-krons = [];
-Cvec = [];
-for c = 1:size(C,1)
-    krons = [krons ; kron(transpose(squeeze(B(c,:,:))),squeeze(A(c,:,:)))]; % solutions
-    Cvec = [Cvec ; reshape(squeeze(C(c,:,:)),size(C,2)*size(C,3),1)]; % measures
-end
-t_kron = zeros(g.L,1);
-f_kron = zeros(g.L,1);
-a_kron = zeros(g.L,1);
-map_rec = pinv(krons) * Cvec;
-map_rec_reshape = reshape(map_rec,Q*N, P);
-map = reshape(abs(map_rec),Q*N, P);
-for i = 1:g.L
-    [maxRows, bestRow] = max(map);
-    [~, bestCol] = max(maxRows);
-    bestRow = bestRow(bestCol);
-    while any(find(abs(bestRow - t_kron) <= 1))
-            map(bestRow,bestCol) = 0;
-            [maxRows, bestRow] = max(map);
-            [~, bestCol] = max(maxRows);
-            bestRow = bestRow(bestCol);
-    end
-    t_kron(i) = bestRow;
-    f_kron(i) = bestCol;
-    a_kron(i) = map_rec_reshape(bestRow,bestCol);
-    map(bestRow,bestCol) = 0;
-    if bestRow < size(map,1)
-        map(bestRow+1,bestCol) = 0;
-    end
-    if bestRow > 1
-        map(bestRow-1,bestCol) = 0;
-    end
-end
-targets_kron.t = t_kron;
-targets_kron.f = f_kron;
-targets_kron.a = a_kron;
+[X, R, X_SR,Supp] = SolveOmpDavid(C, A, B, g.L);
+targets_david.t = squeeze(Supp(:,1));
+targets_david.f = squeeze(Supp(:,2));
 
+%% kron_final
+% krons = [];
+% Cvec = [];
+% for c = 1:size(C,1)
+%     krons = [krons ; kron(transpose(squeeze(B(c,:,:))),squeeze(A(c,:,:)))]; % solutions
+%     Cvec = [Cvec ; reshape(squeeze(C(c,:,:)),size(C,2)*size(C,3),1)]; % measures
+% end
+% t_kron = zeros(g.L,1);
+% f_kron = zeros(g.L,1);
+% a_kron = zeros(g.L,1);
+% map_rec = pinv(krons) * Cvec;
+% map_rec_reshape = reshape(map_rec,Q*N, P);
+% map = reshape(abs(map_rec),Q*N, P);
+% for i = 1:g.L
+%     [maxRows, bestRow] = max(map);
+%     [~, bestCol] = max(maxRows);
+%     bestRow = bestRow(bestCol);
+%     while any(find(abs(bestRow - t_kron) <= 1))
+%             map(bestRow,bestCol) = 0;
+%             [maxRows, bestRow] = max(map);
+%             [~, bestCol] = max(maxRows);
+%             bestRow = bestRow(bestCol);
+%     end
+%     t_kron(i) = bestRow;
+%     f_kron(i) = bestCol;
+%     a_kron(i) = map_rec_reshape(bestRow,bestCol);
+%     map(bestRow,bestCol) = 0;
+%     if bestRow < size(map,1)
+%         map(bestRow+1,bestCol) = 0;
+%     end
+%     if bestRow > 1
+%         map(bestRow-1,bestCol) = 0;
+%     end
+% end
+% targets_kron.t = t_kron;
+% targets_kron.f = f_kron;
+% targets_kron.a = a_kron;
+% 
+% % end Kron
 
 
 %% OMP VEC 

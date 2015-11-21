@@ -2,10 +2,11 @@ function [successVec,resultHist,realHist,targets,targets_Coset] = sim1(Ci,Q,L,P,
 if ( nargin == 0) 
    Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
     Q = 4; % How many ambiguities are resolved
-    L = 4; % numTargets
-    P=10; % numPulses
+    L = 2; % numTargets
+%     P= 10; % numPulses Kron
+    P = 100;
     plot_fail_sim = false;
-    numSims = 100;
+    numSims = 10;
     snr_db = inf;
 %     numSims = 1;
 end
