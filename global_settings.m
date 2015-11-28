@@ -16,6 +16,9 @@ if 0
     save('pulse','h','H_spectra');
 else
     if 1
+        assert(g.h_BW == 100e6);
+        assert(g.Fs == 5e9);
+        assert(g.tau == 10e-6);
         load pulse;
     else
         h = zeros(11,1);
@@ -60,11 +63,11 @@ g.CS.normalize_H_with_division = 1;
 % assert(sample_SubNyquist_factor >= 1);
 % assert(pulse_SubNyquist_factor >= 1);
 k_max = round(0.95*g.h_BW*g.tau);
-num_fourier_coeffs = round(2*g.h_BW*g.tau );
-num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
+num_fourier_coeffs = round(4*g.h_BW*g.tau );
+% num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
 
-    g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
-    g.CS.kappa = 0:g.CS.N_t-1;
+g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
+% g.CS.kappa = 0:g.CS.N_t-1;
 g.CS.kappa = g.CS.kappa(:);
 % assert(length(g.CS.kappa) == num_fourier_coeffs);
 % assert(all(abs(g.CS.kappa) <= k_max));

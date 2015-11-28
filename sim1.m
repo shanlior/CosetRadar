@@ -1,12 +1,13 @@
 function [successVec,resultHist,realHist,targets,targets_Coset] = sim1(Ci,Q,L,P,snr_db,plot_fail_sim,numSims)
 if ( nargin == 0) 
-   Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
-    Q = 4; % How many ambiguities are resolved
-    L = 2; % numTargets
+%    Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
+    Ci=[0];
+    Q = 1; % How many ambiguities are resolved
+    L = 1; % numTargets
 %     P= 10; % numPulses Kron
     P = 100;
-    plot_fail_sim = false;
-    numSims = 10;
+    plot_fail_sim = true;
+    numSims = 1;
     snr_db = inf;
 %     numSims = 1;
 end
@@ -22,7 +23,7 @@ failVec=[4,17,44,50,75,84,97,100];
 
 for (i=1:numSims)
 
-%     Results(i).a=rng(rngVec(i));
+    Results(i).a=rng(rngVec(i));
     Results(i).a=rng('shuffle');
 
     g_coset = global_settings(P,P,L, Ci,Q,snr_db);

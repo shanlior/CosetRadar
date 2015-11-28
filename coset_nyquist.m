@@ -16,11 +16,13 @@ H_kappa = get_H_empiric(g);
 C = zeros(length(Ci), length(g.CS.kappa), P - Q + 1); % output fourier matrix (measurements)
 X = fft(x,[],2);
 kappa_indexes = mod(g.CS.kappa, size(X,2));
+
 for i=1:size(X,1)
     for b=1:size(X,3)
         C(i,:,b) = X(i,kappa_indexes+1,b);
         if g.CS.normalize_H_with_division
-            C(i,:,b) = C(i,:,b) ./ H_kappa.'; %% CHECK: transpose is needed?
+%             C(i,:,b) = C(i,:,b) ./ H_kappa.'; %% CHECK: transpose is needed?
+            C(i,:,b) = C(i,:,b); 
         else
             C(i,:,b) = C(i,:,b) .* H_kappa.';
         end
@@ -28,30 +30,30 @@ for i=1:size(X,1)
 end
 
 %% self check of our equation 
-
-%size(g.h)
-H_spectra=fft(g.h,size(x,2));
-%size(H_spectra)
-%H_spectra = g.H_spectra; 
-%size(H_spectra) 
-
-%size(x,2)
-
-x_check = zeros(size(x,2),size(x,3));
-
-for  k=1:size(x_check,1)
-    for b=Q:P
-        for l=1:g.L
-            x_check(k,b-Q+1) = x_check(k,b-Q+1) + H_spectra(k)*targets.a(l) * exp(1j*2*pi*g.Ci(1)*floor(targets.t(l)/g.tau)/P) * ...
-                exp(-2*1j*pi*(k-1)*mod(targets.t(l),g.tau)/g.tau)*exp(-1j*2*pi*(b-1)*(g.tau*targets.f(l)+g.Ci(1)/P));
-        end
-    end
-end
-DebugArray = squeeze(X(1,:,:));
-debug.a = DebugArray;
-debug.check = x_check;
-% max(max(abs(x_check-squeeze(X(1,:,:)))))
-max(max(abs(x_check-squeeze(X(1,:,:)))));
+% 
+% %size(g.h)
+% H_spectra=fft(g.h,size(x,2));
+% %size(H_spectra)
+% %H_spectra = g.H_spectra; 
+% %size(H_spectra) 
+% 
+% %size(x,2)
+% 
+% x_check = zeros(size(x,2),size(x,3));
+% 
+% for  k=1:size(x_check,1)
+%     for b=Q:P
+%         for l=1:g.L
+%             x_check(k,b-Q+1) = x_check(k,b-Q+1) + H_spectra(k)*targets.a(l) * exp(1j*2*pi*g.Ci(1)*floor(targets.t(l)/g.tau)/P) * ...
+%                 exp(-2*1j*pi*(k-1)*mod(targets.t(l),g.tau)/g.tau)*exp(-1j*2*pi*(b-1)*(g.tau*targets.f(l)+g.Ci(1)/P));
+%         end
+%     end
+% end
+% DebugArray = squeeze(X(1,:,:));
+% debug.a = DebugArray;
+% debug.check = x_check;
+% % max(max(abs(x_check-squeeze(X(1,:,:)))))
+% max(max(abs(x_check-squeeze(X(1,:,:)))));
 
 
 %% Focusing Cell
@@ -259,16 +261,40 @@ max(max(abs(x_check-squeeze(X(1,:,:)))));
 % represents the delays
 
 A = zeros(size(C,1),N,Q*N);
-tmp = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
+% A2 = zeros(size(C,1),N,Q*N);
+
+
+A1 = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
+for i=1:size(A1,2)
+    A1(:,i) = A1(:,i) .* H_kappa;
+end
+% disp STARTa
+% tic
 for c = 1:size(C,1)
     for q=1:Q
-        A(c,:,(1+(q-1)*N):(q*N)) = tmp * exp(j*2*pi*Ci(c)*(q-1)/P);
+        A(c,:,(1+(q-1)*N):(q*N)) = A1 * exp(j*2*pi*Ci(c)*(q-1)/P);
     end
 end
+% disp 'start'
+% for c = 1:size(C,1)
+%     for n1=1:N
+%         for q=1:Q
+%             for n2=1:N
+%                 A2(c,n1,(q-1)*N+n2) = exp(j*2*pi*Ci(c)*(q-1)/P -j *2*pi*(n1-1)'*(n2-1)/N);
+%             end
+%         end
+%     end
+% end
+% disp end
 
+
+% disp A
+% toc
+% ersds
 % B matrix creation - size P x (P-Q)
 
 B = zeros(size(C,1),P,P-Q+1);
+% tic
 for c = 1:size(C,1)
     for p = 1:P
         for b = Q:P
@@ -277,6 +303,8 @@ for c = 1:size(C,1)
         end
     end
 end
+% disp B
+% toc
 [X, R, X_SR,Supp] = SolveOmpDavid(C, A, B, g.L);
 targets_david.t = squeeze(Supp(:,1));
 targets_david.f = squeeze(Supp(:,2));

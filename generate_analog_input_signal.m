@@ -44,18 +44,19 @@ end
     
     
     % add noise
-    
     if g_coset.snr < inf % add noise
         Ps = get_h_power(g_coset);
         sigma_n = sqrt(Ps / g_coset.snr);
-        n = sigma_n * randn(size(x));
+%         n = sigma_n * randn(size(x));
+        n = sigma_n * crandn(size(x)) / sqrt(2);
         if 0
             figure;
-            plot(real(n(:,1)),'g.:');
+            plot(real(n(1,:,1)),'g.:');
             hold on;
-            plot(real(x(:,1)),'b.:');
+            plot(real(x(1,:,1)),'b.:');
         end
         x = x + n;
+        
     end
 end
 

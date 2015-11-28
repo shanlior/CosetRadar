@@ -35,8 +35,8 @@ M=T;
 
 
 while t<=numIters %| norm(vec(R))> 80
-%     str = ['Iteration #', num2str(t)];
-%     disp(str);
+    str = ['Iteration #', num2str(t)];
+    disp(str);
     
     % 2. Find the two indicies of the support
     % ---------------------------------------
@@ -54,7 +54,6 @@ while t<=numIters %| norm(vec(R))> 80
 %     else
 %         tmp=(A2'.*(A1'*R))*B';
 %     end
-   
    [~,ind] = max(tmp(:));
    [i, j] = ind2sub(size(tmp),ind);
     

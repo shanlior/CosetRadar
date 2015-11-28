@@ -3,7 +3,7 @@ function [targets] = randomize_targets(g)
 % randomize amplitudes
 targets.a = ones(g.L, 1);
 if g.P > 1
-    targets.a = targets.a .* exp(1j*2*pi*rand(g.L,1));
+    targets.a = targets.a.* exp(1j*2*pi*rand(g.L,1));
 end
 
 % randomize time and frequency, make sure no overlap
