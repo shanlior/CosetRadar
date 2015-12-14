@@ -44,6 +44,7 @@ g.Nyquist.dt = 1/(2*g.h_BW*1); % Nyquist time bin [sec]
 g.Nyquist.df = 1/(g.P*g.tau); % Nyquist frequency bin [hz]
 g.hit_rate_threshold.t = 3*g.Nyquist.dt; % hit rate ellipse half time axis
 g.hit_rate_threshold.f = 3*g.Nyquist.df; % hit rate ellipse half frequency axis
+g.snr_db = snr_db;
 g.snr = 10^(snr_db/10); %[1]
 % g.fixed_target_amplitudes = fixed_target_amplitudes;
 g.mf.use_windows = 0;
