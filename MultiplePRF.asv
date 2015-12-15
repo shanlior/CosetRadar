@@ -31,11 +31,15 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets )
         for c=1:length(tau)
             Qsize = LCM / round(tau(c)*g.Fs);
             for q=0:Qsize-1
-
-                
-                t(c,(round(targets_ch(c).t(l) * g.Fs) + 1 + q *...
-                    round(tau(c)*g.Fs))+ ...
-                    (ceil(-g.h_length/2)+1):ceil(g.h_length/2))) = g.h;
+                indices = (round(targets_ch(c).t(l) * g.Fs) + 1 + q *...
+                        round(tau(c)*g.Fs))+ ...
+                        ((ceil(-g.h_length/2)+1):1:ceil(g.h_length/2));
+                [~,indices] = find(indices > 0);
+                t(c,indices)
+%                     t(c,(round(targets_ch(c).t(l) * g.Fs) + 1 + q *...
+%                         round(tau(c)*g.Fs))+ ...
+%                         ((ceil(-g.h_length/2)+1):1:ceil(g.h_length/2))) = g.h;
+                end
             end
         end
     end

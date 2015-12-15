@@ -2,8 +2,8 @@ function [successVec,resultHist,realHist,targets,targets_staggered] = sim_stagge
 if ( nargin == 0) 
 %    Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
     Ci=[0];
-    Q = 11; % How many ambiguities are resolved
-    L = 2; % numTargets
+    Q = 4; % How many ambiguities are resolved
+    L = 5; % numTargets
 %     P= 10; % numPulses Kron
     P = 100;
     plot_fail_sim = false;
@@ -30,7 +30,7 @@ for (i=1:numSims)
     g_coset.numSims = numSims;
 
     % Randomizing targets
-    tau = [1.1*g_coset.tau,1*g_coset.tau];
+    tau = [1.1*g_coset.tau,g_coset.tau];
 %     tau = g_coset.tau;
     targets = randomize_targets(g_coset);
 %     round(targets.t*g_coset.Fs)

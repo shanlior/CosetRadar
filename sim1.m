@@ -1,14 +1,14 @@
 function [successVec,resultHist,realHist,targets,targets_Coset] = sim1(Ci,Q,L,P,snr_db,plot_fail_sim,numSims)
 if ( nargin == 0) 
 %    Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
-    Ci=[0];
-    Q = 1; % How many ambiguities are resolved
-    L = 1; % numTargets
+    Ci=[0 3];
+    Q = 2; % How many ambiguities are resolved
+    L = 5; % numTargets
 %     P= 10; % numPulses Kron
     P = 100;
-    plot_fail_sim = true;
-    numSims = 1;
-    snr_db = inf;
+    plot_fail_sim = false;
+    numSims = 5;
+    snr_db = -30;
 %     numSims = 1;
 end
 % Simulation config

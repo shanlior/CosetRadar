@@ -1,5 +1,6 @@
 function [ targets_staggered ] = MultiplePRF( tau, g,targets )
 % Solving radar signal using the multiplePRF scheme
+    debug_print = false;
     P = g.P;
     L = g.L;
     Ci = g.Ci;
@@ -10,7 +11,9 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets )
         LCM = lcm(LCM,round(tau(c)*g.Fs));
     end
     for c=1:length(tau)
-        disp(['Processing channel ',int2str(c)]);
+        if debug_print
+            disp(['Processing channel ',int2str(c)]);
+        end
         g_new = global_settings_tau(P,P,L, Ci,Q,snr_db,tau(c));
         x{c} = generate_analog_input_signal_staggered(tau(c),g_new, targets);
         g_new = global_settings_tau(P-Q+1,P-Q+1,L, Ci,Q,snr_db,tau(c));
@@ -24,18 +27,22 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets )
 %         targets_ch(c).a=targets_ch(c).a(ind);
     end
     
-    disp(['Disecting results']);
+    if debug_print
+        disp(['Disecting results']);
+    end
 
     t = zeros(length(tau),LCM);
     for l=1:L
         for c=1:length(tau)
             Qsize = LCM / round(tau(c)*g.Fs);
             for q=0:Qsize-1
+                indices = (round(targets_ch(c).t(l) * g.Fs) + 1 + q *...
+                        round(tau(c)*g.Fs))+ ...
+                        ((ceil(-g.h_length/2)+1):1:ceil(g.h_length/2));
+                indices = indices(find(indices > 0));
+                firstIdx = length(g.h) - length(indices) + 1;
+                t(c,indices) = g.h(firstIdx:end);
 
-                
-                t(c,(round(targets_ch(c).t(l) * g.Fs) + 1 + q *...
-                    round(tau(c)*g.Fs))+ ...
-                    ((ceil(-g.h_length/2)+1):1:ceil(g.h_length/2))) = g.h;
             end
         end
     end
