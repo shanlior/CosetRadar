@@ -17,7 +17,7 @@ success = 0;
 sumHits = 0;
 realHist = zeros(numSims,L,2);
 resultHist = zeros(numSims,L,2);
-successVec = zeros(numSims,2);
+successVec = zeros(numSims,1);
 rngVec=1:numSims;
 failVec=[4,17,44,50,75,84,97,100];
 
@@ -30,16 +30,16 @@ for (i=1:numSims)
     g_coset.numSims = numSims;
 
     % Randomizing targets
-    tau = [1.1*g_coset.tau,g_coset.tau];
+    tau = [1,1,1.05,1.05,1.1,1.1]*g_coset.tau;
 %     tau = g_coset.tau;
     targets = randomize_targets(g_coset);
 %     round(targets.t*g_coset.Fs)
 %     round(g_coset.tau*g_coset.Fs)
     targets_staggered = MultiplePRF(tau, g_coset,targets);
-    [isSuccess,realHist(i,:,:),resultHist(i,:,:),successVec(i,:)] = ...
+    [isSuccess,realHist(i,:,:),resultHist(i,:,:),successVec(i)] = ...
         analyze_result(g_coset,targets,targets_staggered,i,plot_fail_sim,true);
      success = success + isSuccess;
-    sumHits = sumHits + successVec(i,2);
+    sumHits = sumHits + successVec(i);
     fprintf('Success rate: %.1f percent\n', 100*success/i);
     fprintf('Hit Rate: %.2f\n', sumHits/(i*L));
 %     [targets_est, stats] = analyze_results_staggered(g_coset,...

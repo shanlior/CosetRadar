@@ -30,9 +30,29 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets )
     if debug_print
         disp(['Disecting results']);
     end
+    
+    Perm = perms(1:g.L);
+    goodness = zeros(size(Perm,1),1);
 
-    t = zeros(length(tau),LCM);
+    R = diag([g.hit_rate_threshold.t^-2 g.hit_rate_threshold.f^-2]);
+    % checking best permutations
+    for c=2:length(tau)
+        for p=1:size(Perm,1)
+            t_error = targets_ch(1).t - targets_ch(c).t(Perm(p,:));
+            f_error = targets_ch(1).f - targets_ch(c).f(Perm(p,:));
+            d = [t_error f_error].';
+            D = diag(d'*R*d);
+            goodness(p) = sum(1./D);
+        end
+        [~, best_perm_index] = max(goodness);
+        best_perm = Perm(best_perm_index,:);
+        targets_ch(c).t = targets_ch(c).t(best_perm);
+        targets_ch(c).f = targets_ch(c).f(best_perm);
+        targets_ch(c).a = targets_ch(c).a(best_perm);
+    end
+
     for l=1:L
+        t = zeros(length(tau),LCM);
         for c=1:length(tau)
             Qsize = LCM / round(tau(c)*g.Fs);
             for q=0:Qsize-1
@@ -42,29 +62,27 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets )
                 indices = indices(find(indices > 0));
                 firstIdx = length(g.h) - length(indices) + 1;
                 t(c,indices) = g.h(firstIdx:end);
-
             end
         end
-    end
-    targets_tmp = ones(1,LCM);
-    for c=1:size(t,1)
-        targets_tmp = targets_tmp .* t (c,:);
-    end
-    numPeaks = 0;
-    peakDist = g.h_length;
-    while (numPeaks ~= 5) % making sure 5 targets are found
-        [~,locs] = findpeaks(targets_tmp,'SORTSTR','descend','NPEAKS',L ,...
-            'MINPEAKDISTANCE',peakDist);
-        numPeaks = length(locs);
-        peakDist = floor(peakDist / 2);
-        if ~peakDist
-            break;
+%     end
+        targets_tmp = ones(1,LCM);
+        for c=1:size(t,1)
+            targets_tmp = targets_tmp .* t (c,:);
         end
+        numPeaks = 0;
+        peakDist = g.h_length;
+%         while (numPeaks ~= 5) % making sure 5 targets are found
+    %         [~,locs] = findpeaks(targets_tmp,'SORTSTR','descend','NPEAKS',L ,...
+    %             'MINPEAKDISTANCE',peakDist);
+    %         numPeaks = length(locs);
+    %         peakDist = floor(peakDist / 2);
+    %         if ~peakDist
+    %             break;
+    %         end
+%         end
+        [~,locs] = max(targets_tmp);
+        targets_staggered.t(l) = locs / g.Fs;
     end
-    targets_staggered.t = locs / g.Fs;
-    
-    
-
     
     % finding t - q=0
     targets_q0 = rem(targets_staggered.t,tau(1));

@@ -10,7 +10,6 @@ if timeFlag
     targets_Coset.f = round(targets_Coset.f *  g_coset.P * g_coset.tau + 1);
 end
 success = 0;
-successVec = zeros(1,2);
 
 
  targets_real = [round(targets.t /g_coset.CS.delta_t + 1) , round(targets.f *  g_coset.P * g_coset.tau + 1)];
@@ -44,8 +43,7 @@ successVec = zeros(1,2);
     targets_Coset.best_perm_hits = hits(best_perm_index, :) > 0;
     num_hits = sum(targets_Coset.best_perm_hits);
     
-    successVec(1) = max(goodness(best_perm_candidates));
-    successVec(2) = num_hits;
+    successVec = num_hits;
 
 % 
 % 
@@ -65,7 +63,7 @@ successVec = zeros(1,2);
 %     if successVec(1) == 9 
 %         successVec(1) = 1;
 %     end
-    if successVec(2) == g_coset.L
+    if successVec == g_coset.L
         success = success + 1;
         fprintf('Iteration %d is successful\n', iterNum);
     else
@@ -77,7 +75,7 @@ successVec = zeros(1,2);
             scatter(realHist(:,2),realHist(:,1))
             scatter(resultHist(:,2),resultHist(:,1),'.')
             axis([0 g_coset.P 0 g_coset.CS.N_t*g_coset.Q])
-            str_title{1}=sprintf('Failed : iter num %d , successVec(%d) = %d',iterNum,iterNum,successVec(1));
+            str_title{1}=sprintf('Failed : iter num %d , successVec(%d) = %d',iterNum,iterNum,successVec);
             title(str_title)
              ylabel('Time');
             xlabel('Frequency');
