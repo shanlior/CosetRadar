@@ -13,8 +13,8 @@ Ci = g.Ci;
 % Xampling
 % x, X, C: Dimensions: 1=Channel, 2=Time, 3=Bucket
 H_kappa = get_H_empiric(g);
-C = zeros(length(Ci), length(g.CS.kappa), P - Q + 1); % output fourier matrix (measurements)
-X = fft(x,[],2);
+C = zeros(length(Ci), length(g.CS.kappa), round((P - Q + 1)/g.pulse_SubNyquist_factor)); % output fourier matrix (measurements)
+X = fft(x(:,:,1:size(C,3)),[],2);
 kappa_indexes = mod(g.CS.kappa, size(X,2));
 
 for i=1:size(X,1)
@@ -260,11 +260,10 @@ end
 % A matrix creation - size N x (Q*N)
 % represents the delays
 
-A = zeros(size(C,1),N,Q*N);
+A = zeros(size(C,1),length(kappa_indexes),Q*N);
 % A2 = zeros(size(C,1),N,Q*N);
 
-
-A1 = exp(-j*2*pi*(0:N-1)'*(0:N-1)/N);
+A1 = exp(-j*2*pi*(kappa_indexes)*(0:N-1)/N);
 for i=1:size(A1,2)
     A1(:,i) = A1(:,i) .* H_kappa;
 end
@@ -305,9 +304,11 @@ for c = 1:size(C,1)
 end
 % disp B
 % toc
+% disp {SolveOmpDavid start}
 [X, R, X_SR,Supp] = SolveOmpDavid(C, A, B, g.L);
 targets_david.t = squeeze(Supp(:,1));
 targets_david.f = squeeze(Supp(:,2));
+% disp {SolveOmpDavid end}
 
 %% kron_final
 % krons = [];

@@ -1,4 +1,5 @@
-function [g] = global_settings(nu_pulses, P, L, Ci,Q, snr_db)
+function [g] = global_settings(nu_pulses, P, L, Ci,Q, snr_db,...
+    is_full_sample,reduce_method,sample_SubNyquist_factor,pulse_SubNyquist_factor)
 
 fftw('planner', 'hybrid');
 g.L = L; % number of targets
@@ -9,6 +10,13 @@ g.tau = 10e-6; % PRI [sec]
 g.h_BW = 100e6; % normal
 multFactor = 50;
 g.Fs = multFactor*g.h_BW;
+
+
+    sample_SubNyquist_factor = 1;
+    pulse_SubNyquist_factor = 1;
+    random_fourier_coeffs = reduce_method;
+    
+    
 if 0
     addpath('OMP_Receiver_Test\SignalGeneration');
     addpath('OMP_Receiver_Test\Filters');
@@ -63,15 +71,72 @@ g.CS.normalize_H_with_division = 1;
 
 % assert(sample_SubNyquist_factor >= 1);
 % assert(pulse_SubNyquist_factor >= 1);
-k_max = round(0.95*g.h_BW*g.tau);
-num_fourier_coeffs = round(4*g.h_BW*g.tau );
+% k_max = round(0.95*g.h_BW*g.tau);
 % num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
 
-g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
-% g.CS.kappa = 0:g.CS.N_t-1;
-g.CS.kappa = g.CS.kappa(:);
-% assert(length(g.CS.kappa) == num_fourier_coeffs);
-% assert(all(abs(g.CS.kappa) <= k_max));
+
+if is_full_sample == 0
+
+    g.sample_SubNyquist_factor = sample_SubNyquist_factor;
+    g.pulse_SubNyquist_factor = pulse_SubNyquist_factor;
+    k_max = round(g.h_BW*g.tau);
+    num_fourier_coeffs = round(2*g.h_BW*g.tau / g.sample_SubNyquist_factor);
+    num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
+    if random_fourier_coeffs == 0 % LPF
+        if g.P==1 && num_fourier_coeffs <= k_max
+            disp('todo - real coeffs');
+            g.CS.kappa = 0:num_fourier_coeffs-1;
+        else
+            g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
+        end
+    elseif random_fourier_coeffs == 1 % true rand
+        if g.P==1 && num_fourier_coeffs <= k_max+1
+            g.CS.kappa = randsample(k_max+1, num_fourier_coeffs)-1;
+        else
+            g.CS.kappa = randsample(2*k_max+1, num_fourier_coeffs)-(k_max+1);
+        end
+    elseif random_fourier_coeffs == 2 % blocks of K
+        K = 25;
+        g.CS.kappa = randsample(2*k_max/K, num_fourier_coeffs/K)-1;
+        g.CS.kappa = bsxfun(@plus, K*g.CS.kappa, 0:K-1);
+        g.CS.kappa = g.CS.kappa(:) - k_max;
+        assert(length(g.CS.kappa) == length(unique(g.CS.kappa)));
+    elseif random_fourier_coeffs == 3 % cosets 1 - same k in all cosets
+        if g.P==1
+            k=floor(k_max/num_fourier_coeffs);
+            m=randi(k)-1;
+            g.CS.kappa=(m:k:k_max-1);
+        else
+            k=floor(2*k_max/num_fourier_coeffs);
+            m=randi(k)-1;
+            g.CS.kappa=(-k_max+m:k:k_max-1);
+        end
+    elseif random_fourier_coeffs == 4 % cosets 2 - different k in all cosets
+        if g.P==1
+            k=floor(k_max/num_fourier_coeffs);
+            g.CS.kappa=randi(k, 1, num_fourier_coeffs)-1;
+            g.CS.kappa=g.CS.kappa+(0:num_fourier_coeffs-1)*k;
+        else
+            k=floor(2*k_max/num_fourier_coeffs);
+            g.CS.kappa=randi(k, 1, num_fourier_coeffs)-1;
+            g.CS.kappa=g.CS.kappa+(0:num_fourier_coeffs-1)*k-k_max;
+        end
+    elseif random_fourier_coeffs == 5
+        k_range=num_fourier_coeffs+200;
+        g.CS.kappa=randsample(k_range,num_fourier_coeffs)-k_range/2;
+    else
+        error('bad option');
+    end
+    g.CS.kappa = g.CS.kappa(:);
+else
+    k_max = round(g.h_BW*g.tau);
+    num_fourier_coeffs = round(4*g.h_BW*g.tau );
+    g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
+    % g.CS.kappa = 0:g.CS.N_t-1;
+    g.CS.kappa = g.CS.kappa(:);
+    % assert(length(g.CS.kappa) == num_fourier_coeffs);
+    % assert(all(abs(g.CS.kappa) <= k_max));
+end
 
 % g.CS.A = single(get_V(g));
 % g.CS.B = get_B(g);
