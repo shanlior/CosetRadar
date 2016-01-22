@@ -30,7 +30,6 @@ failVec=[4,17,44,50,75,84,97,100];
 for (i=1:numSims)
     Results(i).a=rng(rngVec(i));
     Results(i).a=rng('shuffle');
-
     g_coset = global_settings(nu_pulses,P,L, Ci,Q,snr_db,is_full_sample,...
         reduce_method,sample_SubNyquist_factor);
     g_coset.numSims = numSims;

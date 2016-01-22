@@ -12,7 +12,8 @@ multFactor = 50;
 g.Fs = multFactor*g.h_BW;
 g.Ci = Ci;
 g.Q = Q;
-g.m_p = sort(randsample(g.P,nu_pulses))-1;
+g.m_p = sort(randsample(g.P,nu_pulses));
+g.nu_pulses = nu_pulses;
 
 
 % sample_SubNyquist_factor = 1;
@@ -81,7 +82,6 @@ g.CS.normalize_H_with_division = 1;
 if is_full_sample == 0
 
     g.sample_SubNyquist_factor = sample_SubNyquist_factor;
-    g.nu_pulses = nu_pulses;
     k_max = round(g.h_BW*g.tau);
     num_fourier_coeffs = round(2*g.h_BW*g.tau / g.sample_SubNyquist_factor);
     num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
