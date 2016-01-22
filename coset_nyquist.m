@@ -3,18 +3,19 @@ function [targets_david] = coset_nyquist(g, x,targets) % SolveAlgorithm=1=FISTA;
 N = g.CS.N_t;
 P = g.P;
 Q = g.Q;
-Pchopped = P - Q + 1;
+%Pchopped = P - Q + 1;
 
 Ci = g.Ci;
 
 %k = g.CS.kappa;
-%m_p = g.m_p;
+m_p = g.m_p;
+nu_pulses = g.nu_pulses;
 
 % Xampling
 % x, X, C: Dimensions: 1=Channel, 2=Time, 3=Bucket
 H_kappa = get_H_empiric(g);
-C = zeros(length(Ci), length(g.CS.kappa), round((P - Q + 1)/g.pulse_SubNyquist_factor)); % output fourier matrix (measurements)
-X = fft(x(:,:,1:size(C,3)),[],2);
+C = zeros(length(Ci), length(g.CS.kappa), nu_pulses - Q + 1);% output fourier matrix (measurements)
+X = fft(x(:,:,:),[],2);
 kappa_indexes = mod(g.CS.kappa, size(X,2));
 
 for i=1:size(X,1)
@@ -292,13 +293,13 @@ end
 % ersds
 % B matrix creation - size P x (P-Q)
 
-B = zeros(size(C,1),P,P-Q+1);
+B = zeros(size(C,1),P,nu_pulses-Q+1);
 % tic
 for c = 1:size(C,1)
     for p = 1:P
-        for b = Q:P
+        for b = Q:nu_pulses
             %B(p,b-Q+1) = exp(-(j*2*pi/P)*((p-1)*(b-1) - Ci*(b-1)));
-            B(c,p,b-Q+1) = exp(-2j*pi*(b-1)*((p-1)/P + Ci(c)/P));
+            B(c,p,b-Q+1) = exp(-2j*pi*(m_p(b)-1)*((p-1)/P + Ci(c)/P));
         end
     end
 end

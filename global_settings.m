@@ -1,5 +1,5 @@
 function [g] = global_settings(nu_pulses, P, L, Ci,Q, snr_db,...
-    is_full_sample,reduce_method,sample_SubNyquist_factor,pulse_SubNyquist_factor)
+    is_full_sample,reduce_method,sample_SubNyquist_factor)
 
 fftw('planner', 'hybrid');
 g.L = L; % number of targets
@@ -10,11 +10,14 @@ g.tau = 10e-6; % PRI [sec]
 g.h_BW = 100e6; % normal
 multFactor = 50;
 g.Fs = multFactor*g.h_BW;
+g.Ci = Ci;
+g.Q = Q;
+g.m_p = sort(randsample(g.P,nu_pulses))-1;
 
 
-    sample_SubNyquist_factor = 1;
-    pulse_SubNyquist_factor = 1;
-    random_fourier_coeffs = reduce_method;
+% sample_SubNyquist_factor = 1;
+% pulse_SubNyquist_factor = 1;
+random_fourier_coeffs = reduce_method;
     
     
 if 0
@@ -78,7 +81,7 @@ g.CS.normalize_H_with_division = 1;
 if is_full_sample == 0
 
     g.sample_SubNyquist_factor = sample_SubNyquist_factor;
-    g.pulse_SubNyquist_factor = pulse_SubNyquist_factor;
+    g.nu_pulses = nu_pulses;
     k_max = round(g.h_BW*g.tau);
     num_fourier_coeffs = round(2*g.h_BW*g.tau / g.sample_SubNyquist_factor);
     num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
@@ -156,17 +159,8 @@ if 0
     fprintf('CS grid bin over Nyquist bin ratio (time/freq) = (%.2f,%.2f)\n', ...
         g.CS.delta_t/g.Nyquist.dt, g.CS.delta_f/g.Nyquist.df);
     fprintf('Classic/CS processing using %d/%d samples per pulse, %d/%d pulses\n', ...
-        round(g.tau*2*g.h_BW), length(g.CS.kappa), g.P, round(g.P / g.pulse_SubNyquist_factor));
-    fprintf('Total CS undersampling ratio = %.1f\n', g.pulse_SubNyquist_factor * g.sample_SubNyquist_factor);
+        round(g.tau*2*g.h_BW), length(g.CS.kappa), g.P, g.nu_pulses);
+    fprintf('Total CS undersampling ratio = %.1f\n', (g.P/g.nu_pulses) * g.sample_SubNyquist_factor);
 end
 
-%% Gal Lior setting
-% Adds m_p
-if nargin == 0
-    nu_pulses = 50;
-end
 
-g.m_p = sort(randsample(g.P,nu_pulses))-1;
-% g.m_p = 1;
-g.Ci = Ci;
-g.Q = Q;

@@ -40,7 +40,7 @@ for c=1:length(g_coset.Ci)
     x(c,:,:) = x_iter;
 end
     % chop matrix
-    x = x(:,:,Q:P); % Dimensions: 1=Channel, 2=Time, 3=Bucket
+    x = x(:,:,g_coset.m_p(Q:end)); % Dimensions: 1=Channel, 2=Time, 3=Bucket
     
     
     % add noise
