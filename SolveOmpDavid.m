@@ -109,9 +109,7 @@ while t<=numIters %| norm(vec(R))> 80
 
     %x_t = YVec\SuppMat
     x_t = SuppMat\YVec;
-    
-    absx_t=abs(x_t);
-    
+        
  
     tmp2=SuppMat*x_t;
     R = Y-reshape(tmp2,size(Y));

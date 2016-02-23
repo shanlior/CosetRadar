@@ -1,6 +1,6 @@
 close all;clear all;
 L=5;
-numSims = 100;
+numSims = 1;
 P=100;
 save_opt=1;
 %% graph 1    success rate vs snr  - coset radar
@@ -11,7 +11,10 @@ success_rate_per_sim_2 = zeros(length(Q),length(snr));
 success_rate_per_targets_2 = zeros(length(Q),length(snr));
 success_per_sim_2 = zeros(length(Q),length(snr));
 success_per_targets_2 = zeros(length(Q),length(snr));
-
+if save_opt
+    cur_dir=pwd;
+    main_result_path = [ cur_dir '/sims_results/coset'];
+end
 for j=1:length(Q)
     parfor i = 1:length(snr)
          fprintf('graph 1, snr = %d, Q=%d  !!!!!!!!!!!!!!!!!!!!!!!!!!!!coset!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', snr(i),Q(j));
@@ -24,33 +27,33 @@ for j=1:length(Q)
         success_rate_per_targets_2(j,i) = 100*success_per_targets_2(j,i) / size(successVec,1) / L; 
         if (save_opt) 
             cur_dir=pwd;
-            main_result_path = [ cur_dir '/sims_results/coset'];
+    main_result_path = [ cur_dir '/sims_results/coset'];
             str_snr=int2str(snr(i));
             str_j=int2str(j);
             dest = [main_result_path '/Q_is_' str_j '/snr_is_' str_snr '/'];
             mkdir(dest);
             f_dest = [dest 'successVec'];
-            parsave(f_dest,successVec);
+            save(f_dest,'successVec');
             f_dest = [dest 'success_per_sim'];
             tmp_var = success_per_sim_2(j,i);
-            parsave(f_dest,tmp_var);
+            save(f_dest,'tmp_var');
             f_dest = [dest 'success_rate_per_sim'];
             tmp_var = success_rate_per_sim_2(j,i);
-            parsave(f_dest,tmp_var);
+            save(f_dest,'tmp_var');
             f_dest = [dest 'success_per_targets'];
             tmp_var = success_per_targets_2(j,i);
-            parsave(f_dest,tmp_var);
+            save(f_dest,'tmp_var');
             f_dest = [dest 'success_rate_per_targets'];
             tmp_var = success_rate_per_targets_2(j,i);
-            parsave(f_dest,tmp_var);
+            save(f_dest,'tmp_var');
             f_dest = [dest 'resultHist'];
-            parsave(f_dest,resultHist);
+            save(f_dest,'resultHist');
             f_dest = [dest 'realHist'];
-            parsave(f_dest,realHist);
+            save(f_dest,'realHist');
             f_dest = [dest 'targets'];
-            parsave(f_dest,targets);
+            save(f_dest,'targets');
             f_dest = [dest 'targets_Coset'];
-            parsave(f_dest,targets_Coset);
+            save(f_dest,'targets_Coset');
         end
         toc
     end
@@ -119,7 +122,7 @@ set(gca,'FontSize',14);
 %     main_result_path = [ cur_dir '/sims_results/staggered'];
 % end
 % for j=1:length(Q)
-%     parfor i = 1:length(snr)
+%     for i = 1:length(snr)
 %          fprintf('graph 1, snr = %d, Q=%d  !!!!!!!!!!!!!!!!!!!!!!!!!!staggered!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', snr(i),Q(j));
 %          tic
 %         [successVec,resultHist,realHist,targets,targets_staggered] = sim_staggered(0,Q(j),L,P,snr(i),false,numSims);
@@ -133,27 +136,27 @@ set(gca,'FontSize',14);
 %             dest = [main_result_path '/Q_is_' str_j '/snr_is_' str_snr '/'];
 %             mkdir(dest);
 %             f_dest = [dest 'successVec'];
-%             parsave(f_dest,successVec);
+%             save(f_dest,'successVec');
 %             f_dest = [dest 'success_per_sim'];
 %             tmp_var = success_per_sim(j,i);
-%             parsave(f_dest,tmp_var);
+%             save(f_dest,'tmp_var');
 %             f_dest = [dest 'success_rate_per_sim'];
 %             tmp_var = success_rate_per_sim(j,i);
-%             parsave(f_dest,tmp_var);
+%             save(f_dest,'tmp_var');
 %             f_dest = [dest 'success_per_targets'];
 %             tmp_var = success_per_targets(j,i);
-%             parsave(f_dest,tmp_var);
+%             save(f_dest,'tmp_var');
 %             f_dest = [dest 'success_rate_per_targets'];
 %             tmp_var = success_rate_per_targets(j,i);
-%             parsave(f_dest,tmp_var);
+%             save(f_dest,'tmp_var');
 %             f_dest = [dest 'resultHist'];
-%             parsave(f_dest,resultHist);
+%             save(f_dest,'resultHist');
 %             f_dest = [dest 'realHist'];
-%             parsave(f_dest,realHist);
+%             save(f_dest,'realHist');
 %             f_dest = [dest 'targets'];
-%             parsave(f_dest,targets);
+%             save(f_dest,'targets');
 %             f_dest = [dest 'targets_staggered'];
-%             parsave(f_dest,targets_staggered);
+%             save(f_dest,'targets_staggered');
 %         end
 %         toc
 %     end

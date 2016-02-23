@@ -23,13 +23,14 @@ success = 0;
 sumHits = 0;
 realHist = zeros(numSims,L,2);
 resultHist = zeros(numSims,L,2);
-successVec = zeros(numSims,2);
+successVec = zeros(numSims,1);
 rngVec=1:numSims;
 failVec=[4,17,44,50,75,84,97,100];
 
 for (i=1:numSims)
     Results(i).a=rng(rngVec(i));
     Results(i).a=rng('shuffle');
+
     g_coset = global_settings(nu_pulses,P,L, Ci,Q,snr_db,is_full_sample,...
         reduce_method,sample_SubNyquist_factor);
     g_coset.numSims = numSims;
@@ -50,9 +51,9 @@ for (i=1:numSims)
 %         end
 %     end
 
-    [isSuccess,realHist(i,:,:),resultHist(i,:,:),successVec(i,:)] = analyze_result(g_coset,targets,targets_Coset,i,plot_fail_sim);
+    [isSuccess,realHist(i,:,:),resultHist(i,:,:),successVec(i)] = analyze_result(g_coset,targets,targets_Coset,i,plot_fail_sim);
     success = success + isSuccess;
-    sumHits = sumHits + successVec(i,2);
+    sumHits = sumHits + successVec(i);
     fprintf('Success rate: %.1f percent\n', 100*success/i);
     fprintf('Hit Rate: %.2f\n', sumHits/(i*L));
    
