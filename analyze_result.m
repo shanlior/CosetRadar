@@ -12,7 +12,7 @@ end
 success = 0;
 
 
- targets_real = [floor(targets.t/g_coset.CS.delta_t + 1) , floor(targets.f *  g_coset.P * g_coset.tau + 1)];
+ targets_real = [round(targets.t/g_coset.CS.delta_t + 1) , mod(round(targets.f *  g_coset.P * g_coset.tau),100) + 1];
  
 %     for l=1:g_coset.L
 %         if targets_real(l,2) > g_coset.P

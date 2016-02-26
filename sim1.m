@@ -1,5 +1,5 @@
 function [successVec,resultHist,realHist,targets,targets_Coset] = sim1(Ci,Q,L,P,snr_db,plot_fail_sim,numSims,is_full_sample,reduce_method,...
-    sample_SubNyquist_factor,nu_pulses)
+    sample_SubNyquist_factor,nu_pulses,less_p)
 if ( nargin == 0) 
 %    Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
     Ci=[0 3 5 7 11 13 17];
@@ -16,6 +16,7 @@ if ( nargin == 0)
     sample_SubNyquist_factor = 1;
     nu_pulses = P;
 %     numSims = 1;
+less_p = P;
 end
 % Simulation config
 rng('shuffle');
@@ -32,7 +33,7 @@ for (i=1:numSims)
     Results(i).a=rng('shuffle');
 
     g_coset = global_settings(nu_pulses,P,L, Ci,Q,snr_db,is_full_sample,...
-        reduce_method,sample_SubNyquist_factor);
+        reduce_method,sample_SubNyquist_factor,less_p);
     g_coset.numSims = numSims;
 
     % Randomizing targets

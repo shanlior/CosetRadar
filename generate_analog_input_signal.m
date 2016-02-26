@@ -28,7 +28,8 @@ C_delay_element=exp(-1j*2*pi*g.Ci'*(0:P-1)/P) ;    % Phase shift by modulation
 %===============================
 for c=1:length(g.Ci)
     for l=1:g.L      
-        for p=1:P
+%         for p=1:P
+        for p = g.less_p
             x_tmp((n_start(l):n_stop(l)) + (p - 1) * round(g.tau * g.Fs),1) = ...
              x_tmp((n_start(l):n_stop(l)) + (p - 1) * round(g.tau * g.Fs),1) + ...
               targets.a(l) * g.h * exp(phi1(l,p)+phi2(l))*C_delay_element(c,p);
@@ -41,6 +42,7 @@ for c=1:length(g.Ci)
 end
     % chop matrix
     x = x(:,:,g.m_p(Q:end)); % Dimensions: 1=Channel, 2=Time, 3=Bucket
+%     x = x(:,:,Q:P); % Dimensions: 1=Channel, 2=Time, 3=Bucket
     
     
     % add noise
