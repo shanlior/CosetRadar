@@ -1,5 +1,5 @@
 function [g] = global_settings(nu_pulses, P, L, Ci,Q, snr_db,...
-    is_full_sample,reduce_method,sample_SubNyquist_factor,less_p)
+    is_full_sample,reduce_method,sample_SubNyquist_factor,less_p,same_reduce_pulses_B)
 
 fftw('planner', 'hybrid');
 g.L = L; % number of targets
@@ -14,13 +14,17 @@ g.Ci = Ci;
 g.Q = Q;
 g.m_p = sort(randsample(g.P,nu_pulses))';
 g.nu_pulses = nu_pulses;
+g.same_reduce_pulses_B = 1;
 
 
 % sample_SubNyquist_factor = 1;
 % pulse_SubNyquist_factor = 1;
 random_fourier_coeffs = reduce_method;
-    
-g.less_p =  sort(randsample(g.P,less_p))'; 
+if same_reduce_pulses_B 
+    g.less_p = g.m_p;
+else
+    g.less_p =  sort(randsample(g.P,less_p))'; 
+end
 if 0
     addpath('OMP_Receiver_Test\SignalGeneration');
     addpath('OMP_Receiver_Test\Filters');
