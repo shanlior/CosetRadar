@@ -87,7 +87,6 @@ if config == 2
     load('Ci_4.mat');
     load('Ci_8.mat');
     load('Ci_10.mat');
-%     load('Ci_20.mat');
     all_Ci = {Ci_4,Ci_8,Ci_10};
       mkdir(cfg_path);
     for i = 1:length(snr)
