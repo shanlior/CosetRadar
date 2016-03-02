@@ -16,8 +16,8 @@ if ( nargin == 0)
     sample_SubNyquist_factor = 1;
     nu_pulses = P;
 %     numSims = 1;
-less_p = P;
-same_reduce_pulses_B = 1;
+    less_p = P;
+    same_reduce_pulses_B = 1;
 end
 % Simulation config
 rng('shuffle');
@@ -32,7 +32,7 @@ failVec=[4,17,44,50,75,84,97,100];
 for (i=1:numSims)
     Results(i).a=rng(rngVec(i));
     Results(i).a=rng('shuffle');
-
+    
     g_coset = global_settings(nu_pulses,P,L, Ci,Q,snr_db,is_full_sample,...
         reduce_method,sample_SubNyquist_factor,less_p,same_reduce_pulses_B);
     g_coset.numSims = numSims;

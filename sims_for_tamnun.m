@@ -1,9 +1,9 @@
 close all;clear all;
 L=5;
 Q=2;
-numSims = 100;
+numSims = 50;
 P=100;
-snr = [-45 -40 -38 -35 -30 -25 -20];
+snr = [-43 -40 -38 -35 -30 -25 -20];
 all_primes = primes(500);
 all_primes = [0 all_primes];
 save_opt=1;
@@ -78,8 +78,8 @@ end
 
 %% config 2  :    Full Sample , num Ci > Q,  rand Ci , partial  pulses and B , not same partial pulses and B- coset radar
 if config == 2
-    num_of_cfg = 12;
-    partial_pulses = [50 25 20 10];
+    num_of_cfg = 4;
+    partial_pulses = [50 25 20];
     success_rate_per_targets = zeros(num_of_cfg,length(snr),size(partial_pulses,1));
     success_per_targets = zeros(num_of_cfg,length(snr),size(partial_pulses,1));
     cur_dir=pwd;
@@ -87,12 +87,12 @@ if config == 2
     load('Ci_4.mat');
     load('Ci_8.mat');
     load('Ci_10.mat');
-    load('Ci_20.mat');
-    all_Ci = {Ci_4,Ci_8,Ci_10,Ci_20};
+%     load('Ci_20.mat');
+    all_Ci = {Ci_4,Ci_8,Ci_10};
       mkdir(cfg_path);
     for i = 1:length(snr)
         for ii = 1:length(partial_pulses)
-            parfor j=1:num_of_cfg
+            for j=1:num_of_cfg
                  tic
                  [successVec,resultHist,realHist,targets,targets_Coset] = ...
                        sim1(all_Ci{ii}(j,:),Q,L,P,snr(i),false,numSims,1,1,1,partial_pulses(ii),partial_pulses(ii),0);
@@ -102,7 +102,7 @@ if config == 2
                     str_snr=int2str(snr(i));
                     str_j=int2str(j);
                     str_ii = int2str(partial_pulses(ii));
-                    dest = [cfg_path '/iter_' str_j '/par_pulses' str_ii  '/snr_' str_snr '/'];
+                    dest = [cfg_path '/Ci_' str_j '/par_pulses' str_ii  '/snr_' str_snr '/'];
                     mkdir(dest);
                     f_dest = [dest 'successVec'];
                     parsave(f_dest,successVec);
