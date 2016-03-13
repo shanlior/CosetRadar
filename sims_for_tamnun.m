@@ -1,13 +1,14 @@
 close all;clear all;
 L=5;
 Q=2;
-numSims = 50;
+numSims = 100;
 P=100;
 snr = [-43 -40 -38 -35 -30 -25 -20];
+snr = -45:-20;
 all_primes = primes(500);
 all_primes = [0 all_primes];
 save_opt=1;
-config = 3;
+config = 5;
 %% config 1  :    Full Sample , num Ci = Q,  random Ci , all pulses - coset radar
 if config == 1
     num_of_cfg = 24;
@@ -286,54 +287,30 @@ if config == 4
     % set(gca,'FontSize',14);
 end
 
-%% config 5  :   not Full Sample = 50 , num Ci > Q,  rand Ci , partial  pulses and B , not same partial pulses and B- coset radar
+%% config 5  :   Q = [3 4 8] ; Ci = [37 79] ; 
 if config == 5
-    num_of_cfg = 12;
-    partial_pulses = [50 25 20 10];
-    success_rate_per_targets = zeros(num_of_cfg,length(snr),size(partial_pulses,1));
-    success_per_targets = zeros(num_of_cfg,length(snr),size(partial_pulses,1));
+    cfg5_Q = [3 4 8];
+    success_rate_per_targets = zeros(length(cfg5_Q),length(snr));
+    success_per_targets = zeros(length(cfg5_Q),length(snr));
     cur_dir=pwd;
     cfg_path = [cur_dir '/cfg_5'];
     
-    load('Ci_4.mat');
-    load('Ci_8.mat');
-    load('Ci_10.mat');
-    load('Ci_20.mat');
-    all_Ci = {Ci_4,Ci_8,Ci_10,Ci_20};
     mkdir(cfg_path);
-    for i = 1:length(snr)
-        for ii = 1:length(partial_pulses)
-            parfor j=1:num_of_cfg
-                 tic
-                 [successVec,resultHist,realHist,targets,targets_Coset] = ...
-                       sim1(all_Ci{ii}(j,:),Q,L,P,snr(i),false,numSims,0,1,2,partial_pulses(ii),partial_pulses(ii),0);
-                success_per_targets(j,i,ii) = sum(successVec);
-                success_rate_per_targets(j,i,ii) = 100*success_per_targets(j,i,ii) / size(successVec,1) / L; 
-                if (save_opt) 
-                    str_snr=int2str(snr(i));
-                    str_j=int2str(j);
-                    str_ii = int2str(partial_pulses(ii));
-                    dest = [cfg_path '/iter_' str_j '/par_pulses' str_ii  '/snr_' str_snr '/'];
-                    mkdir(dest);
-                    f_dest = [dest 'successVec'];
-                    parsave(f_dest,successVec);
-                    f_dest = [dest 'success_per_targets'];
-                    tmp_var = success_per_targets(j,i,ii);
-                    parsave(f_dest,tmp_var);
-                    f_dest = [dest 'success_rate_per_targets'];
-                    tmp_var = success_rate_per_targets(j,i,ii);
-                    parsave(f_dest,tmp_var);
-                    f_dest = [dest 'resultHist'];
-                    parsave(f_dest,resultHist);
-                    f_dest = [dest 'realHist'];
-                    parsave(f_dest,realHist);
-                    f_dest = [dest 'targets'];
-                    parsave(f_dest,targets);
-                    f_dest = [dest 'targets_Coset'];
-                    parsave(f_dest,targets_Coset);
-                end
-                toc
-            end
+    for j = 1: length(cfg5_Q)
+        for i = 1:length(snr)
+            str_line = ['-------cfg5-------Q = ',num2str(cfg5_Q(j)),'-------------snr = ',num2str(snr(i)),'------------'];
+            disp(str_line)
+             tic
+             [successVec,resultHist,realHist,targets,targets_Coset] = ...
+                   sim1([37 79],cfg5_Q(j),L,P,snr(i),false,numSims,1,1,1,P,P,1);
+            success_per_targets(j,i) = sum(successVec);
+            success_rate_per_targets(j,i) = 100*success_per_targets(j,i) / size(successVec,1) / L; 
+%             successVec = 0;
+%             resultHist = 0;
+%             realHist = 0;
+%             targets = 0;
+%             targets_Coset = 0;
+            toc
         end
     end
     if save_opt 
@@ -345,6 +322,7 @@ if config == 5
         tmp_var = success_rate_per_targets;
         save(f_dest,'tmp_var');
     end
+    
 
     % figure
     % plot(snr,success_rate_per_targets(1,:),'o-',snr,success_rate_per_targets(2,:),'x-')
@@ -358,54 +336,32 @@ if config == 5
 end
 
 
-%% config 6  :   not Full Sample = 50  , num Ci > Q,  rand Ci , partial  pulses and B , same partial pulses and B- coset radar
+
+%% config 6  :   Q = 2 ; Ci = [37 79] ; less pulses = [25 50 75]
 if config == 6
-    num_of_cfg = 12;
-    partial_pulses = [50 25 20 10];
-    success_rate_per_targets = zeros(num_of_cfg,length(snr),size(partial_pulses,1));
-    success_per_targets = zeros(num_of_cfg,length(snr),size(partial_pulses,1));
+    less_p = [25 50 75];
+    success_rate_per_targets = zeros(length(less_p),length(snr));
+    success_per_targets = zeros(length(less_p),length(snr));
     cur_dir=pwd;
     cfg_path = [cur_dir '/cfg_6'];
     
-    load('Ci_4.mat');
-    load('Ci_8.mat');
-    load('Ci_10.mat');
-    load('Ci_20.mat');
-    all_Ci = {Ci_4,Ci_8,Ci_10,Ci_20};
     mkdir(cfg_path);
-    for i = 1:length(snr)
-        for ii = 1:length(partial_pulses)
-            parfor j=1:num_of_cfg
-                 tic
-                 [successVec,resultHist,realHist,targets,targets_Coset] = ...
-                       sim1(all_Ci{ii}(j,:),Q,L,P,snr(i),false,numSims,0,1,2,partial_pulses(ii),partial_pulses(ii),1);
-                success_per_targets(j,i,ii) = sum(successVec);
-                success_rate_per_targets(j,i,ii) = 100*success_per_targets(j,i,ii) / size(successVec,1) / L; 
-                if (save_opt) 
-                    str_snr=int2str(snr(i));
-                    str_j=int2str(j);
-                    str_ii = int2str(partial_pulses(ii));
-                    dest = [cfg_path '/iter_' str_j '/par_pulses' str_ii  '/snr_' str_snr '/'];
-                    mkdir(dest);
-                    f_dest = [dest 'successVec'];
-                    parsave(f_dest,successVec);
-                    f_dest = [dest 'success_per_targets'];
-                    tmp_var = success_per_targets(j,i,ii);
-                    parsave(f_dest,tmp_var);
-                    f_dest = [dest 'success_rate_per_targets'];
-                    tmp_var = success_rate_per_targets(j,i,ii);
-                    parsave(f_dest,tmp_var);
-                    f_dest = [dest 'resultHist'];
-                    parsave(f_dest,resultHist);
-                    f_dest = [dest 'realHist'];
-                    parsave(f_dest,realHist);
-                    f_dest = [dest 'targets'];
-                    parsave(f_dest,targets);
-                    f_dest = [dest 'targets_Coset'];
-                    parsave(f_dest,targets_Coset);
-                end
-                toc
-            end
+    for j = 1: length(less_p)
+%         for i = 1:length(snr)
+        for i = 1:length(snr)
+            str_line = ['-------cfg6-------lees_p = ',num2str(less_p(j)),'-------------snr = ',num2str(snr(i)),'------------'];
+            disp(str_line)
+             tic
+             [successVec,resultHist,realHist,targets,targets_Coset] = ...
+                   sim1([37 79],Q,L,P,snr(i),false,numSims,1,1,1,P,less_p(j),0);
+            success_per_targets(j,i) = sum(successVec);
+            success_rate_per_targets(j,i) = 100*success_per_targets(j,i) / size(successVec,1) / L; 
+%             successVec = 0;
+%             resultHist = 0;
+%             realHist = 0;
+%             targets = 0;
+%             targets_Coset = 0;
+            toc
         end
     end
     if save_opt 
@@ -417,6 +373,7 @@ if config == 6
         tmp_var = success_rate_per_targets;
         save(f_dest,'tmp_var');
     end
+    
 
     % figure
     % plot(snr,success_rate_per_targets(1,:),'o-',snr,success_rate_per_targets(2,:),'x-')
@@ -428,6 +385,8 @@ if config == 6
     % legend('Q=2','Q=3');
     % set(gca,'FontSize',14);
 end
+
+
 
 %% config 7  :    not Full Sample = 50 , num Ci > Q,  rand Ci , partial  pulses , full B , not same partial pulses and B- coset radar
 if config == 7
