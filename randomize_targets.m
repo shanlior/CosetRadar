@@ -17,7 +17,11 @@ while overlapping_targets
     targets.t = rand(g.L, 1) * (g.Q * g.tau - g.t_pulse); %[sec]
     %targets.t = round(targets.t * 1e8)/1e8;
     targets.t = round(targets.t * g.Fs) / g.Fs;
+    targets.t = round(targets.t / g.CS.delta_t) * g.CS.delta_t;
     targets.f = rand(g.L, 1) * 1/g.tau; %[hz]
+    targets.f = round(targets.f *  g.P * g.tau) / (g.P * g.tau); 
+%     [round(targets.t/g_coset.CS.delta_t + 1) 
+%      mod(round(targets.f *  g_coset.P * g_coset.tau),100) + 1];
     overlapping_targets = 0;
     for l=1:g.L-1
         for ll=l+1:g.L

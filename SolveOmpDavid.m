@@ -63,11 +63,11 @@ while t<=numIters %| norm(vec(R))> 80
    Supp(t,2) = j;  %sin
    Supp(t,1) = i;  %range 
    isTarget = true;
-   for idx=1:t-1
-       if ((abs(Supp(idx,2) - j) < 3) && (abs(Supp(idx,1) - i) == 0)) || ((abs(Supp(idx,1) - i) < 3) && (abs(Supp(idx,2) - j) == 0))
-           isTarget = false;
-       end
-   end
+   % for idx=1:t-1
+       % if ((abs(Supp(idx,2) - j) < 3) && (abs(Supp(idx,1) - i) == 0)) || ((abs(Supp(idx,1) - i) < 3) && (abs(Supp(idx,2) - j) == 0))
+           % isTarget = false;
+       % end
+   % end
    
    
     ii=i;
@@ -122,8 +122,8 @@ while t<=numIters %| norm(vec(R))> 80
 %     norm(R(:))
     if isTarget
         t = t+1;
-%     else
-%         disp NotTarget
+    else
+        disp NotTarget
     end
     
 
