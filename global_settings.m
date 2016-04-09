@@ -5,7 +5,6 @@ fftw('planner', 'hybrid');
 g.L = L; % number of targets
 g.P = P; % number of pulses
 g.tau = 10e-6; % PRI [sec]
-% g.tau = 5e-6; % PRI [sec]
 % g.h_BW = 1e6*11/10; % kron
 g.h_BW = 100e6; % normal
 multFactor = 50;
@@ -17,8 +16,6 @@ g.nu_pulses = nu_pulses;
 g.same_reduce_pulses_B = 1;
 
 
-% sample_SubNyquist_factor = 1;
-% pulse_SubNyquist_factor = 1;
 random_fourier_coeffs = reduce_method;
 if same_reduce_pulses_B 
     g.less_p = g.m_p;
@@ -62,7 +59,6 @@ g.hit_rate_threshold.t = 3*g.Nyquist.dt; % hit rate ellipse half time axis
 g.hit_rate_threshold.f = 3*g.Nyquist.df; % hit rate ellipse half frequency axis
 g.snr_db = snr_db;
 g.snr = 10^(snr_db/10); %[1]
-% g.fixed_target_amplitudes = fixed_target_amplitudes;
 g.mf.use_windows = 0;
 g.mf.debug_plot = 0;
 
@@ -76,11 +72,6 @@ assert(abs(g.CS.N_f - 1/g.tau / g.CS.delta_f) < 1e-11);
 g.invalid_indexes_end = floor(g.t_pulse/g.CS.delta_t)-1; % -1 to make even
 g.CS.time_over_recovery = 2; % time over-recovery factor
 g.CS.normalize_H_with_division = 1;
-
-% assert(sample_SubNyquist_factor >= 1);
-% assert(pulse_SubNyquist_factor >= 1);
-% k_max = round(0.95*g.h_BW*g.tau);
-% num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
 
 
 if is_full_sample == 0
@@ -139,23 +130,10 @@ else
     k_max = round(g.h_BW*g.tau);
     num_fourier_coeffs = round(4*g.h_BW*g.tau );
     g.CS.kappa = ceil(-num_fourier_coeffs/2):ceil(num_fourier_coeffs/2)-1;
-    % g.CS.kappa = 0:g.CS.N_t-1;
     g.CS.kappa = g.CS.kappa(:);
-    % assert(length(g.CS.kappa) == num_fourier_coeffs);
-    % assert(all(abs(g.CS.kappa) <= k_max));
 end
 
-% g.CS.A = single(get_V(g));
-% g.CS.B = get_B(g);
-% g.CS.A = normalize_columns(g.CS.A);
-% g.CS.B = normalize_columns(g.CS.B);
 
-% g.CS.A2 = zeros(length(g.CS.kappa)*g.P, g.CS.N_t*g.CS.N_f, 'single');
-% for p=0:g.P-1
-%     g.CS.A2(1+p*length(g.CS.kappa):(p+1)*length(g.CS.kappa),:) = ...
-%         kron(exp(1j*2*pi*p*(0:g.CS.N_f-1)/g.CS.N_f), g.CS.A);
-% end
-% assert(all(abs(g.CS.A2(:)) > 0));
 if 0
     fprintf('duty cycle = %%%.2f\n', 100*g.t_pulse/g.tau);
     fprintf('Hit rate ellipse: +/-(%.2f,%.2f) Nyquist (time,freq) bins\n', ...

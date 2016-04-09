@@ -1,10 +1,5 @@
 function [x] = generate_analog_input_signal(g, targets)
 
-% if exist('g.m_p','var')==1
-%     P = size(g.m_p,1);
-% else
-%     P = g.P;
-% end
 
 P = g.P;
 Q = g.Q;
@@ -14,10 +9,8 @@ Q = g.Q;
 num_buckets = P + Q - 1;
 x = zeros(length(g.Ci), round(g.tau * g.Fs), num_buckets);
 
-% x_iter = zeros(round(g.tau * g.Fs), num_buckets); % for more than one channel we need to add a dimension
 x_tmp = zeros(round(g.tau * g.Fs)*num_buckets,1); % a matrix for each channel (needed for another dimension support)
 % Following from the equation: g.tau * g.Fs = Nsamples
-%n_start = round(targets.t * g.Fs) + 1;
 n_start = round(targets.t * g.Fs) + 1;
 n_stop = n_start + g.h_length - 1;
 phi1 = -2j*pi*targets.f*(0:P-1)*g.tau; % phase shift for calculations
@@ -42,14 +35,12 @@ for c=1:length(g.Ci)
 end
     % chop matrix
     x = x(:,:,g.m_p(Q:end)); % Dimensions: 1=Channel, 2=Time, 3=Bucket
-%     x = x(:,:,Q:P); % Dimensions: 1=Channel, 2=Time, 3=Bucket
     
     
     % add noise
     if g.snr < inf % add noise
         Ps = get_h_power(g);
         sigma_n = sqrt(Ps / g.snr);
-%         n = sigma_n * randn(size(x));
         n = sigma_n * crandn(size(x)) / sqrt(2);
         if 0
             figure;

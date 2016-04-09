@@ -22,7 +22,6 @@ for i=1:size(X,1)
     for b=1:size(X,3)
         C(i,:,b) = X(i,kappa_indexes+1,b);
         if g.CS.normalize_H_with_division
-%             C(i,:,b) = C(i,:,b) ./ H_kappa.'; %% CHECK: transpose is needed?
             C(i,:,b) = C(i,:,b); 
         else
             C(i,:,b) = C(i,:,b) .* H_kappa.';
@@ -31,14 +30,8 @@ for i=1:size(X,1)
 end
 
 %% self check of our equation 
-% 
-% %size(g.h)
+
 % H_spectra=fft(g.h,size(x,2));
-% %size(H_spectra)
-% %H_spectra = g.H_spectra; 
-% %size(H_spectra) 
-% 
-% %size(x,2)
 % 
 % x_check = zeros(size(x,2),size(x,3));
 % 
@@ -53,11 +46,10 @@ end
 % DebugArray = squeeze(X(1,:,:));
 % debug.a = DebugArray;
 % debug.check = x_check;
-% % max(max(abs(x_check-squeeze(X(1,:,:)))))
-% max(max(abs(x_check-squeeze(X(1,:,:)))));
+% max(max(abs(x_check-squeeze(X(1,:,:)))))
 
 
-%% Focusing Cell
+%% Focusing Cell    - NOT RELEVANT 
 %clear X;
 
 % Creates the Vandermonde matrices
@@ -176,7 +168,7 @@ end
 
 
 
-%% fdf
+%% fdf - NOT RELEVANT 
 
 % d
 % map_power = abs(map).^2;
@@ -248,7 +240,7 @@ end
 % end
 %     [indices.t' ; indices.f']';
     
-%% Kronecker
+%% OUR OMP
 
 % Changes: h (pulse), P size, h_BW
 % x, X, C: Dimensions: 1=Channel, 2=Time, 3=Bucket
@@ -262,56 +254,33 @@ end
 % represents the delays
 
 A = zeros(size(C,1),length(kappa_indexes),Q*N);
-% A2 = zeros(size(C,1),N,Q*N);
 
 A1 = exp(-j*2*pi*(kappa_indexes)*(0:N-1)/N);
 for i=1:size(A1,2)
     A1(:,i) = A1(:,i) .* H_kappa;
 end
-% disp STARTa
-% tic
+
 for c = 1:size(C,1)
     for q=1:Q
         A(c,:,(1+(q-1)*N):(q*N)) = A1 * exp(j*2*pi*Ci(c)*(q-1)/P);
     end
 end
-% disp 'start'
-% for c = 1:size(C,1)
-%     for n1=1:N
-%         for q=1:Q
-%             for n2=1:N
-%                 A2(c,n1,(q-1)*N+n2) = exp(j*2*pi*Ci(c)*(q-1)/P -j *2*pi*(n1-1)'*(n2-1)/N);
-%             end
-%         end
-%     end
-% end
-% disp end
 
-
-% disp A
-% toc
-% ersds
 % B matrix creation - size P x (P-Q)
 
 B = zeros(size(C,1),P,nu_pulses-Q+1);
-% tic
 for c = 1:size(C,1)
     for p = 1:P
         for b = Q:nu_pulses
-            %B(p,b-Q+1) = exp(-(j*2*pi/P)*((p-1)*(b-1) - Ci*(b-1)));
             B(c,p,b-Q+1) = exp(-2j*pi*(m_p(b)-1)*((p-1)/P + Ci(c)/P));
         end
     end
 end
-% disp B
-% toc
-% disp {SolveOmpDavid start}
 [X, R, X_SR,Supp] = SolveOmpDavid(C, A, B, g.L);
 targets_david.t = squeeze(Supp(:,1));
 targets_david.f = squeeze(Supp(:,2));
-% disp {SolveOmpDavid end}
 
-%% kron_final
+%% kron_final  - NOT RELEVANT 
 % krons = [];
 % Cvec = [];
 % for c = 1:size(C,1)
@@ -352,7 +321,7 @@ targets_david.f = squeeze(Supp(:,2));
 % % end Kron
 
 
-%% OMP VEC 
+%% OMP VEC  - NOT RELEVANT 
 % 
 % % Creates the Vandermonde matrices
 % 

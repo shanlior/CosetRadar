@@ -14,19 +14,12 @@ success = 0;
 
  targets_real = [round(targets.t/g_coset.CS.delta_t + 1) , mod(round(targets.f *  g_coset.P * g_coset.tau),100) + 1];
  
-%     for l=1:g_coset.L
-%         if targets_real(l,2) > g_coset.P
-%             targets_real(l,2) = targets_real(l,2) - 9;
-%         end
-%     end
 
 
     P = perms(1:g_coset.L);
     hits = zeros(size(P));
     goodness = zeros(size(P,1),1);
-%     R = diag([g_coset.hit_rate_threshold.t^-2 g_coset.hit_rate_threshold.f^-2]);
     R = diag([round(g_coset.hit_rate_threshold.t/g_coset.CS.delta_t)^-2 * round(g_coset.hit_rate_threshold.f * g_coset.P * g_coset.tau)^-2]);
-%     R = eye(2);
     for p=1:size(P,1)
         t_error = targets_real(:,1) - targets_Coset.t(P(p,:));
         f_error = targets_real(:,2) - targets_Coset.f(P(p,:));
@@ -45,24 +38,9 @@ success = 0;
     
     successVec = num_hits;
 
-% 
-% 
-%     targets_real_sort = sortrows(targets_real);
     targets_result = [targets_Coset.t , targets_Coset.f];
-%     targets_result_sort = sortrows(targets_result);
     realHist = targets_real(:,:);
     resultHist = targets_result(:,:);
-    %[targets_Coset,stats] = analyze_results(g_coset, targets, targets_Coset, 'NU_SubNyq');
-%     differ=abs(targets_real_sort - targets_result_sort);
-%     successVec(1) = max(max(differ));
-%     for i = 1:g_coset.L 
-%         if differ(i,1) < 2 && differ(i,2) < 2 
-%             successVec(2) = successVec(2) + 1;
-%         end
-%     end
-%     if successVec(1) == 9 
-%         successVec(1) = 1;
-%     end
     if successVec == g_coset.L
         success = success + 1;
         fprintf('Iteration %d is successful\n', iterNum);
@@ -82,7 +60,6 @@ success = 0;
             legend('Real','Result')
             grid on
             hold off 
-%             drawnow
         end
     end
 end
