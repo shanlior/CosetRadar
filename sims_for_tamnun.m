@@ -289,7 +289,8 @@ end
 
 %% config 5  :   Q = [3 4 8] ; Ci = [37 79] ; 
 if config == 5
-    cfg5_Q = [3 4 8];
+%     cfg5_Q = [2 3 4 8];
+    cfg5_Q = [2 3];
     success_rate_per_targets = zeros(length(cfg5_Q),length(snr));
     success_per_targets = zeros(length(cfg5_Q),length(snr));
     cur_dir=pwd;
