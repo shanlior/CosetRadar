@@ -52,7 +52,7 @@ function [x] = generate_analog_input_signal_staggered(tau,g_coset,targets);
         Ps = get_h_power(g_coset);
         sigma_n = sqrt(Ps / g_coset.snr);
 %         n = sigma_n * randn(size(x));
-        n = sigma_n * crandn(size(x)) / sqrt(2);
+        n = sigma_n * (randn(size(x)) + j * randn(size(x))) / sqrt(2);
         if 0
             figure;
             plot(real(n(1,:,1)),'g.:');

@@ -1,4 +1,5 @@
-function [ targets_staggered ] = MultiplePRF( tau, g,targets )
+function [ targets_staggered ] = MultiplePRF( tau, g,targets,sample_SubNyquist_factor, pulse_SubNyquist_factor,focusing)
+
 % Solving radar signal using the multiplePRF scheme
     debug_print = false;
     P = g.P;
@@ -14,10 +15,14 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets )
         if debug_print
             disp(['Processing channel ',int2str(c)]);
         end
-        g_new = global_settings_tau(P,P,L, Ci,Q,snr_db,tau(c));
+        g_new = global_settings_tau(P,P,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor);
         x{c} = generate_analog_input_signal_staggered(tau(c),g_new, targets);
-        g_new = global_settings_tau(P-Q+1,P-Q+1,L, Ci,Q,snr_db,tau(c));
-        targets_tmp = classic_processing(g_new, x{c});
+        g_new = global_settings_tau(P-Q+1,P-Q+1,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor);
+        if focusing
+            targets_tmp = cs_processing_DopplerFocusing(g_new, x{c});
+        else
+            targets_tmp = classic_processing(g_new, x{c}, sample_SubNyquist_factor, pulse_SubNyquist_factor);
+        end
         targets_ch(c) = targets_tmp;
         
 %         figure;

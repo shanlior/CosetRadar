@@ -15,9 +15,9 @@ while overlapping_targets
     % we added the Q factor
     targets.t = rand(g.L, 1) * (g.Q * g.tau - g.t_pulse); %[sec]
     targets.t = round(targets.t * g.Fs) / g.Fs;
-    targets.t = round(targets.t / g.CS.delta_t) * g.CS.delta_t;
+    targets.t = floor(targets.t / g.CS.delta_t) * g.CS.delta_t;
     targets.f = rand(g.L, 1) * 1/g.tau; %[hz]
-    targets.f = round(targets.f *  g.P * g.tau) / (g.P * g.tau); 
+    targets.f = floor(targets.f *  g.P * g.tau) / (g.P * g.tau); 
     overlapping_targets = 0;
     for l=1:g.L-1
         for ll=l+1:g.L

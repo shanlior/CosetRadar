@@ -1,9 +1,10 @@
-function [g] = global_settings_tau(nu_pulses, P, L, Ci,Q, snr_db,tau)
+function [g] = global_settings_tau(nu_pulses, P, L, Ci,Q, snr_db,tau,sample_SubNyquist_factor, pulse_SubNyquist_factor)
 
 fftw('planner', 'hybrid');
 g.L = L; % number of targets
 g.P = P; % number of pulses
 g.tau = tau; % PRI [sec]
+g.pulse_SubNyquist_factor = pulse_SubNyquist_factor;
 % g.tau = 5e-6; % PRI [sec]
 % g.h_BW = 1e6*11/10; % kron
 g.h_BW = 100e6; % normal
@@ -93,6 +94,20 @@ if 0
         round(g.tau*2*g.h_BW), length(g.CS.kappa), g.P, round(g.P / g.pulse_SubNyquist_factor));
     fprintf('Total CS undersampling ratio = %.1f\n', g.pulse_SubNyquist_factor * g.sample_SubNyquist_factor);
 end
+
+
+g.sample_SubNyquist_factor = sample_SubNyquist_factor;
+k_max = round(g.h_BW*g.tau);
+num_fourier_coeffs = round(2*g.h_BW*g.tau / g.sample_SubNyquist_factor);
+num_fourier_coeffs = min(num_fourier_coeffs, 2*k_max);
+if g.P==1 && num_fourier_coeffs <= k_max+1
+    g.CS.kappa = randsample(k_max+1, num_fourier_coeffs)-1;
+else
+    g.CS.kappa = randsample(2*k_max+1, num_fourier_coeffs)-(k_max+1);
+end
+g.CS.kappa = g.CS.kappa(:);
+
+g.CS.A = single(get_V(g));
 
 %% Gal Lior setting
 % Adds m_p

@@ -1,4 +1,4 @@
-function [successVec,resultHist,realHist,targets,targets_staggered] = sim_staggered(Ci,Q,L,P,snr_db,plot_fail_sim,numSims)
+function [successVec,resultHist,realHist,targets,targets_staggered] = sim_staggered(Ci,Q,L,P,nu_pulses,snr_db,plot_fail_sim,numSims,sample_SubNyquist_factor, pulse_SubNyquist_factor,focusing)
 if ( nargin == 0) 
 %    Ci=[0 3 5 7 11  17 19 23 ]; % channel coefficient
     Ci=[0];
@@ -19,23 +19,24 @@ realHist = zeros(numSims,L,2);
 resultHist = zeros(numSims,L,2);
 successVec = zeros(numSims,1);
 rngVec=1:numSims;
-failVec=[4,17,44,50,75,84,97,100];
+% failVec=[4,17,44,50,75,84,97,100];
 
 for (i=1:numSims)
     disp(['Simulation number ',int2str(i)]);
     Results(i).a=rng(rngVec(i));
     Results(i).a=rng('shuffle');
+    less_p = P / pulse_SubNyquist_factor;
+    g_coset = global_settings(nu_pulses,P,L, Ci,Q,snr_db,1,1,sample_SubNyquist_factor, less_p,0);
 
-    g_coset = global_settings(P,P,L, Ci,Q,snr_db);
     g_coset.numSims = numSims;
 
     % Randomizing targets
-    tau = [1,1,1.05,1.05,1.1,1.1]*g_coset.tau;
+    tau = [1,1.01]*g_coset.tau;
 %     tau = g_coset.tau;
     targets = randomize_targets(g_coset);
 %     round(targets.t*g_coset.Fs)
 %     round(g_coset.tau*g_coset.Fs)
-    targets_staggered = MultiplePRF(tau, g_coset,targets);
+    targets_staggered = MultiplePRF(tau, g_coset,targets,sample_SubNyquist_factor, pulse_SubNyquist_factor,focusing);
     [isSuccess,realHist(i,:,:),resultHist(i,:,:),successVec(i)] = ...
         analyze_result(g_coset,targets,targets_staggered,i,plot_fail_sim,true);
      success = success + isSuccess;
