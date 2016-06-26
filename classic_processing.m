@@ -7,6 +7,8 @@ end
 % decimate to Nyquist rate
 L = round(g.Fs/(2*g.h_BW)* sample_SubNyquist_factor);
 x_Nyquist = zeros(ceil(size(x,1)/L),round(g.P / pulse_SubNyquist_factor));
+x_Nyquist = zeros(ceil(size(x,1)/L),round(g.P));
+
 for p=1:size(x_Nyquist, 2)
     x_Nyquist(:,p) = decimate(x(:,p),L);
 end

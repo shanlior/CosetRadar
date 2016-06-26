@@ -11,13 +11,16 @@ function [ targets_staggered ] = MultiplePRF( tau, g,targets,sample_SubNyquist_f
     for c=1:length(tau)
         LCM = lcm(LCM,round(tau(c)*g.Fs));
     end
+    
+    less_p = sort(randsample(g.P,100/pulse_SubNyquist_factor))'; 
     for c=1:length(tau)
         if debug_print
             disp(['Processing channel ',int2str(c)]);
         end
-        g_new = global_settings_tau(P,P,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor);
+        g_new = global_settings_tau(P,P,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor,less_p);
         x{c} = generate_analog_input_signal_staggered(tau(c),g_new, targets);
-        g_new = global_settings_tau(P-Q+1,P-Q+1,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor);
+%         g_new = global_settings_tau(P-Q+1,P-Q+1,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor);
+        g_new = global_settings_tau(P-Q+1,P-Q+1,L, Ci,Q,snr_db,tau(c),sample_SubNyquist_factor, pulse_SubNyquist_factor,less_p);
         if focusing
             targets_tmp = cs_processing_DopplerFocusing(g_new, x{c});
         else

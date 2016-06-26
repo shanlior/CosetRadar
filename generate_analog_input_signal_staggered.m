@@ -33,7 +33,7 @@ function [x] = generate_analog_input_signal_staggered(tau,g_coset,targets);
 %     phi2 = -2j*pi*targets.f.*floor(targets.t/tau)*tau; % phase shift for
 %     calculations CHECK
     for l=1:g_coset.L      
-        for p=1:P     
+        for p=g_coset.less_p     
             x((n_start(l):n_stop(l)) + (p - 1) * round(tau * g_coset.Fs)) = ...
              x((n_start(l):n_stop(l)) + (p - 1) * round(tau * g_coset.Fs)) + ...
              targets.a(l) * g_coset.h * exp(phi1(l,p));

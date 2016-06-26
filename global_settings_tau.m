@@ -1,4 +1,4 @@
-function [g] = global_settings_tau(nu_pulses, P, L, Ci,Q, snr_db,tau,sample_SubNyquist_factor, pulse_SubNyquist_factor)
+function [g] = global_settings_tau(nu_pulses, P, L, Ci,Q, snr_db,tau,sample_SubNyquist_factor, pulse_SubNyquist_factor,less_p)
 
 fftw('planner', 'hybrid');
 g.L = L; % number of targets
@@ -10,6 +10,8 @@ g.pulse_SubNyquist_factor = pulse_SubNyquist_factor;
 g.h_BW = 100e6; % normal
 multFactor = 50;
 g.Fs = multFactor*g.h_BW;
+g.less_p =  less_p;
+
 if 0
     addpath('OMP_Receiver_Test\SignalGeneration');
     addpath('OMP_Receiver_Test\Filters');
